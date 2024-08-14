@@ -34,7 +34,7 @@ void Server::setupSocket()
 
     memset(&hints, 0, sizeof hints);
     // TCP IPv4
-    hints.ai_family = AF_UNSPEC;
+    hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     // get address info
     if ((status = getaddrinfo(NULL, _port.c_str(), &hints, &res)) != 0)
