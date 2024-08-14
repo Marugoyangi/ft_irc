@@ -182,86 +182,118 @@ void Server::stopEpoll()
 
 
 #ifdef __APPLE__
-void Server::setupKqueue() {
-    struct kevent event;
-    struct kevent events[MAX_EVENTS];
-    char buffer[BUFFER_SIZE];
+#ifdef __APPLE__
+#include <sys/types.h>
+#include <sys/event.h>
+#include <sys/time.h>
+
+void Server::setupKqueue()
+{
+    struct kevent change_list[MAX_EVENTS];
+    struct kevent event_list[MAX_EVENTS];
+    std::string buffer;
+    std::string leftover;
 
     setupSocket();
-    
-    _kqueue_fd = kqueue();
-    if (_kqueue_fd == -1) {
+
+    // kqueue 생성
+    _event_fd = kqueue();
+    if (_event_fd == -1)
+    {
         die("kqueue");
     }
 
-    // Register the server socket for read events
-    EV_SET(&event, _server_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-    if (kevent(_kqueue_fd, &event, 1, nullptr, 0, nullptr) == -1) {
-        die("kevent: add server socket");
+    // 서버 소켓을 kqueue에 등록 (readable 이벤트)
+    EV_SET(&change_list[0], _server_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+
+    if (kevent(_event_fd, change_list, 1, NULL, 0, NULL) == -1)
+    {
+        die("kevent: listen_sock");
     }
 
-    while (!shutdown) {
-        int n = kevent(_kqueue_fd, nullptr, 0, events, MAX_EVENTS, NULL);
-        if (n == -1) {
+    while (g_shutdown == false)
+    {
+        int n = kevent(_event_fd, NULL, 0, event_list, MAX_EVENTS, NULL);
+        if (n == -1)
+        {
             die("kevent");
         }
 
-        for (int i = 0; i < n; ++i) {
-            if (events[i].ident == _server_fd) {
+        for (int i = 0; i < n; ++i)
+        {
+            if (event_list[i].ident == (unsigned int)_server_fd)
+            {
                 struct sockaddr_in client_addr;
                 socklen_t client_addr_len = sizeof(client_addr);
+
                 int client = accept(_server_fd, (struct sockaddr *)&client_addr, &client_addr_len);
-                if (client < 0) {
+                if (client < 0)
+                {
                     perror("accept");
                     continue;
                 }
 
-                setnonblocking(client);
+                // 클라이언트 소켓을 non-blocking으로 설정
+                if (fcntl(client, F_SETFL, O_NONBLOCK) == -1)
+                    die("fcntl");
 
-                EV_SET(&event, client, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, nullptr);
-                if (kevent(_kqueue_fd, &event, 1, nullptr, 0, nullptr) == -1) {
-                    die("kevent: add client socket");
+                // 새 클라이언트 소켓을 kqueue에 등록 (readable 이벤트)
+                EV_SET(&change_list[0], client, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+                if (kevent(_event_fd, change_list, 1, NULL, 0, NULL) == -1)
+                {
+                    die("kevent: client");
                 }
+                _clients_fds.insert(client); // FD 추가
+            }
+            else
+            {
+                int client = event_list[i].ident;
+                buffer.resize(BUFFER_SIZE);
 
-                client_fds.insert(client);
-            } else {
-                int client = events[i].ident;
-
-                ssize_t bytes_received = recv(client, buffer, BUFFER_SIZE - 1, 0);
-                if (bytes_received < 0) {
+                ssize_t bytes_received = recv(client, &buffer[0], BUFFER_SIZE - 1, 0);
+                if (bytes_received < 0)
+                {
                     perror("recv");
-                    EV_SET(&event, client, EVFILT_READ, EV_DELETE, 0, 0, nullptr);
-                    kevent(_kqueue_fd, &event, 1, nullptr, 0, nullptr);
+                    EV_SET(&change_list[0], client, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+                    kevent(_event_fd, change_list, 1, NULL, 0, NULL);
                     close(client);
-                    client_fds.erase(client);
-                } else if (bytes_received == 0) {
-                    std::cout << "Client closed connection." << std::endl;
-                    EV_SET(&event, client, EVFILT_READ, EV_DELETE, 0, 0, nullptr);
-                    kevent(_kqueue_fd, &event, 1, nullptr, 0, nullptr);
+                    _clients_fds.erase(client);
+                }
+                else if (bytes_received == 0)
+                {
+                    printf("Client closed connection.\n");
+                    EV_SET(&change_list[0], client, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+                    kevent(_event_fd, change_list, 1, NULL, 0, NULL);
                     close(client);
-                    client_fds.erase(client);
-                } else {
-                    buffer[bytes_received] = '\0';
-                    std::string data = leftover + std::string(buffer, bytes_received);
+                    _clients_fds.erase(client);
+                }
+                else
+                {
+                    buffer.resize(bytes_received);
+                    std::string data = leftover + buffer;
+                    printf("added data: %s\n", data.c_str());
                     leftover.clear();
-
+                    
                     size_t pos;
-                    while ((pos = data.find("\r\n")) != std::string::npos) {
+                    while ((pos = data.find("\r\n")) != std::string::npos)
+                    {
                         std::string message = data.substr(0, pos);
-                        std::cout << "Received message: " << message << std::endl;
+                        printf("Received message: %s\n", message.c_str());
 
                         ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
-                        std::cout << "Sent " << sent_bytes << " bytes" << std::endl;
-                        if (sent_bytes < 0) {
+                        printf("Sent %ld bytes\n", sent_bytes);
+                        if (sent_bytes < 0)
+                        {
                             perror("send");
-                        } else if (sent_bytes != static_cast<ssize_t>(message.size())) {
-                            std::cerr << "Warning: Not all data was sent." << std::endl;
+                        }
+                        else if (sent_bytes != static_cast<ssize_t>(message.size()))
+                        {
+                            fprintf(stderr, "Warning: Not all data was sent.\n");
                         }
 
-                        data.erase(0, pos + 2);  // Remove the processed message
+                        data.erase(0, pos + 2);  // 처리된 메시지를 제거
                     }
-
-                    // Remaining data is saved in leftover
+                    // 남은 데이터를 leftover에 저장
                     leftover = data;
                 }
             }
@@ -270,23 +302,16 @@ void Server::setupKqueue() {
     stopKqueue(); // Clean up
 }
 
-void Server::stopKqueue() {
-    EV_SET(&event, _server_fd, EVFILT_READ, EV_DELETE, 0, 0, 0);
-    kevent(_kqueue_fd, &event, 1, 0, 0, 0);
+void Server::stopKqueue()
+{
     close(_server_fd);
     std::set<int>::iterator it;
-
-    for (it = _clients_fds.begin(); it != _clients_fds.end(); ++it) 
-    {
-        int client = *it;
-    
-        // 이벤트 삭제
-        EV_SET(&event, client, EVFILT_READ, EV_DELETE, 0, 0, 0);
-        kevent(_kqueue_fd, &event, 1, 0, 0, 0);
-    
-        // 소켓 닫기
-        close(client);
+    for (it = _clients_fds.begin(); it != _clients_fds.end(); ++it) {
+        int client_fd = *it;
+        close(client_fd);
     }
-    close(_kqueue_fd);
+    close(_event_fd);
 }
+#endif
+
 #endif
