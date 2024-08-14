@@ -8,7 +8,7 @@
 #include <arpa/inet.h>
 
 #define BUFFER_SIZE 512
-#define SERVER_IP localhost
+#define SERVER_IP 192.168.219.101
 #define SERVER_PORT 10007
 #define RESPONSE_LENGTH 14 // 서버에서 보내는 응답의 길이
 
