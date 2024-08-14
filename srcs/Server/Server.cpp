@@ -313,5 +313,3 @@ void Server::stopKqueue()
     close(_event_fd);
 }
 #endif
-
-#endif
