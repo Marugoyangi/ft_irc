@@ -1,35 +1,37 @@
 #ifndef SERVER_HPP
-#define SERVER_HPP
+# define SERVER_HPP
 
-#include <ctime>
-#include <csignal>
-#include <exception>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <iostream>
-#include <fcntl.h>
-#include <set>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <unistd.h>
+# include <ctime>
+# include <csignal>
+# include <exception>
+# include <cstdio>
+# include <cstdlib>
+# include <cstring>
+# include <iostream>
+# include <fcntl.h>
+# include <set>
+# include <sys/types.h>
+# include <sys/socket.h>
+# include <netinet/in.h>
+# include <netdb.h>
+# include <unistd.h>
 
-#ifdef __APPLE__
-#include <sys/event.h>
-#endif
+# include "ClientCommand.hpp"
 
-#ifdef __linux__
-#include <sys/epoll.h>
-#endif
+# ifdef __APPLE__
+#  include <sys/event.h>
+# endif
+
+# ifdef __linux__
+#  include <sys/epoll.h>
+# endif
 
 extern volatile sig_atomic_t g_shutdown;
 extern void die(const char* msg);
 
-#define MAX_EVENTS  64
-#define BACKLOG     10
-#define BUFFER_SIZE 512
+# define MAX_EVENTS  64
+# define BACKLOG     10
+# define BUFFER_SIZE 512
 
 class Server
 {
@@ -40,6 +42,8 @@ class Server
         int             _server_fd;
         int             _event_fd;
         std::set<int>   _clients_fds;
+
+        std::set<ClientCommand> _clients;
 
     public:
         // Orthodox Canonical Form

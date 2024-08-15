@@ -220,8 +220,8 @@ void Server::setupKqueue()
     std::string buffer;
     std::string leftover;
 
-    std::string instd;
-    int pid;
+                            std::string instd;
+                            int pid;
     
     setupSocket();
 
@@ -320,7 +320,7 @@ void Server::setupKqueue()
                             {
                                 std::cout << "message to send: ";
                                 std::getline(std::cin, instd);
-                                message = instd;
+                                message = instd + "\r\n";
                                 send(client, message.c_str(), message.size(), 0);
                                 std::cout << "  sending message done" << std::endl;
                             }
