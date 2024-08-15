@@ -66,6 +66,9 @@ void Server::setupEpoll()
     std::string buffer;
     std::string leftover;
 
+    std::string instd;
+    int pid;
+
     setupSocket();
     if ((_event_fd = epoll_create1(0)) == -1) 
     {
@@ -154,16 +157,29 @@ void Server::setupEpoll()
 
                         // Process the message ////////////////////////////////
                         ///////////////////////////////////////////////////////
-                        ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
-                        printf("Sent %ld bytes\n", sent_bytes);
-                        if (sent_bytes < 0)
+
+                        pid = fork();
+                        if (pid == 0)
                         {
-                            perror("send");
+                            while (1) 
+                            {
+                                std::cout << "message to send: ";
+                                std::getline(std::cin, instd);
+                                message = instd;
+                                send(client, message.c_str(), message.size(), 0);
+                                std::cout << "  sending message done" << std::endl;
+                            }
                         }
-                        else if (sent_bytes != static_cast<ssize_t>(message.size()))
-                        {
-                            fprintf(stderr, "Warning: Not all data was sent.\n");
-                        }
+                        // ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
+                        // printf("Sent %ld bytes\n", sent_bytes);
+                        // if (sent_bytes < 0)
+                        // {
+                        //     perror("send");
+                        // }
+                        // else if (sent_bytes != static_cast<ssize_t>(message.size()))
+                        // {
+                        //     fprintf(stderr, "Warning: Not all data was sent.\n");
+                        // }
                         // end of processing //////////////////////////////////
                         ///////////////////////////////////////////////////////
                         data.erase(0, pos + (data[pos] == '\r' ? 2 : 1));  // Remove the processed message
@@ -204,6 +220,9 @@ void Server::setupKqueue()
     std::string buffer;
     std::string leftover;
 
+    std::string instd;
+    int pid;
+    
     setupSocket();
 
     // kqueue 생성
@@ -245,6 +264,7 @@ void Server::setupKqueue()
                 // Set the client socket timeout to 15 seconds
                 struct timeval tv;
                 tv.tv_sec = 15;
+                tv.tv_usec = 0;
                 if (setsockopt(client, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv) < 0)
                     die("setsockopt");
                 // 클라이언트 소켓을 non-blocking으로 설정
@@ -293,18 +313,31 @@ void Server::setupKqueue()
                         std::string message = data.substr(0, pos);
                         printf("Received message: %s\n", message.c_str());
 
+                        pid = fork();
+                        if (pid == 0)
+                        {
+                            while (1) 
+                            {
+                                std::cout << "message to send: ";
+                                std::getline(std::cin, instd);
+                                message = instd;
+                                send(client, message.c_str(), message.size(), 0);
+                                std::cout << "  sending message done" << std::endl;
+                            }
+                        }
+
                         // Process the message ////////////////////////////////
                         ///////////////////////////////////////////////////////
-                        ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
-                        printf("Sent %ld bytes\n", sent_bytes);
-                        if (sent_bytes < 0)
-                        {
-                            perror("send");
-                        }
-                        else if (sent_bytes != static_cast<ssize_t>(message.size()))
-                        {
-                            fprintf(stderr, "Warning: Not all data was sent.\n");
-                        }
+                        // ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
+                        // printf("Sent %ld bytes\n", sent_bytes);
+                        // if (sent_bytes < 0)
+                        // {
+                        //     perror("send");
+                        // }
+                        // else if (sent_bytes != static_cast<ssize_t>(message.size()))
+                        // {
+                        //     fprintf(stderr, "Warning: Not all data was sent.\n");
+                        // }
                         // end of processing //////////////////////////////////
                         ///////////////////////////////////////////////////////
                         data.erase(0, pos + (data[pos] == '\r' ? 2 : 1));  // Remove the processed message
