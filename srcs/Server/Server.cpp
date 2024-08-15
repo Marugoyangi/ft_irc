@@ -139,7 +139,7 @@ void Server::setupEpoll()
                     leftover.clear();
 
                     size_t pos;
-                    while ((pos = data.find("\r\n")) != std::string::npos)
+                    while ((pos = data.find("\r\n")) != std::string::npos || (pos = data.find("\n")) != std::string::npos)
                     {
                         std::string message = data.substr(0, pos);
                         printf("Received message: %s\n", message.c_str());
@@ -155,7 +155,7 @@ void Server::setupEpoll()
                             fprintf(stderr, "Warning: Not all data was sent.\n");
                         }
 
-                        data.erase(0, pos + 2);  // Remove the processed message
+                        data.erase(0, pos + (data[pos] == '\r' ? 2 : 1));  // Remove the processed message
                     }
                     // Remaining data is saved in leftover
                     leftover = data;
@@ -271,11 +271,10 @@ void Server::setupKqueue()
                 {
                     buffer.resize(bytes_received);
                     std::string data = leftover + buffer;
-                    printf("added data: %s\n", data.c_str());
                     leftover.clear();
                     
                     size_t pos;
-                    while ((pos = data.find("\r\n")) != std::string::npos)
+                    while ((pos = data.find("\r\n")) != std::string::npos || (pos = data.find("\n")) != std::string::npos)
                     {
                         std::string message = data.substr(0, pos);
                         printf("Received message: %s\n", message.c_str());
@@ -291,7 +290,7 @@ void Server::setupKqueue()
                             fprintf(stderr, "Warning: Not all data was sent.\n");
                         }
 
-                        data.erase(0, pos + 2);  // 처리된 메시지를 제거
+                        data.erase(0, pos + (data[pos] == '\r' ? 2 : 1));  // Remove the processed message
                     }
                     // 남은 데이터를 leftover에 저장
                     leftover = data;
