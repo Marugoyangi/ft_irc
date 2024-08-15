@@ -99,7 +99,11 @@ void Server::setupEpoll()
                     perror("accept");
                     continue;
                 }
-
+                // Set the client socket timeout to 15 seconds
+                struct timeval tv;
+                tv.tv_sec = 15;
+                if (setsockopt(client, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv) < 0)
+                    die("setsockopt");
                 // Set the client socket to non-blocking mode
                 if (fcntl(client, F_SETFL, O_NONBLOCK) == -1)
                     die("fcntl");
@@ -120,9 +124,12 @@ void Server::setupEpoll()
                 ssize_t bytes_received = recv(client, &buffer[0], BUFFER_SIZE - 1, 0);
                 if (bytes_received < 0)
                 {
-                    perror("recv");
+                    if (errno == EAGAIN || errno == EWOULDBLOCK)
+                        printf("Client timeout\n");
+                    else
+                        perror("recv");
                     epoll_ctl(_event_fd, EPOLL_CTL_DEL, client, NULL);
-                    close(client);
+                       close(client);
                     _clients_fds.erase(client);
                 }
                 else if (bytes_received == 0)
@@ -141,9 +148,12 @@ void Server::setupEpoll()
                     size_t pos;
                     while ((pos = data.find("\r\n")) != std::string::npos || (pos = data.find("\n")) != std::string::npos)
                     {
+                        
                         std::string message = data.substr(0, pos);
                         printf("Received message: %s\n", message.c_str());
 
+                        // Process the message ////////////////////////////////
+                        ///////////////////////////////////////////////////////
                         ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
                         printf("Sent %ld bytes\n", sent_bytes);
                         if (sent_bytes < 0)
@@ -154,7 +164,8 @@ void Server::setupEpoll()
                         {
                             fprintf(stderr, "Warning: Not all data was sent.\n");
                         }
-
+                        // end of processing //////////////////////////////////
+                        ///////////////////////////////////////////////////////
                         data.erase(0, pos + (data[pos] == '\r' ? 2 : 1));  // Remove the processed message
                     }
                     // Remaining data is saved in leftover
@@ -231,7 +242,11 @@ void Server::setupKqueue()
                     perror("accept");
                     continue;
                 }
-
+                // Set the client socket timeout to 15 seconds
+                struct timeval tv;
+                tv.tv_sec = 15;
+                if (setsockopt(client, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv) < 0)
+                    die("setsockopt");
                 // 클라이언트 소켓을 non-blocking으로 설정
                 if (fcntl(client, F_SETFL, O_NONBLOCK) == -1)
                     die("fcntl");
@@ -278,6 +293,8 @@ void Server::setupKqueue()
                         std::string message = data.substr(0, pos);
                         printf("Received message: %s\n", message.c_str());
 
+                        // Process the message ////////////////////////////////
+                        ///////////////////////////////////////////////////////
                         ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
                         printf("Sent %ld bytes\n", sent_bytes);
                         if (sent_bytes < 0)
@@ -288,7 +305,8 @@ void Server::setupKqueue()
                         {
                             fprintf(stderr, "Warning: Not all data was sent.\n");
                         }
-
+                        // end of processing //////////////////////////////////
+                        ///////////////////////////////////////////////////////
                         data.erase(0, pos + (data[pos] == '\r' ? 2 : 1));  // Remove the processed message
                     }
                     // 남은 데이터를 leftover에 저장
