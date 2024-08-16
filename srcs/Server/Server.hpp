@@ -16,7 +16,8 @@
 # include <netdb.h>
 # include <unistd.h>
 
-# include "ClientCommand.hpp"
+# include "../Commands/Command.hpp"
+// # include "Client.hpp"
 
 # ifdef __APPLE__
 #  include <sys/event.h>
@@ -43,7 +44,7 @@ class Server
         int             _event_fd;
         std::set<int>   _clients_fds;
 
-        std::set<ClientCommand> _clients;
+        // std::set<ClientCommand> _clients;
 
     public:
         // Orthodox Canonical Form

@@ -221,7 +221,9 @@ void Server::setupKqueue()
     std::string leftover;
 
                             std::string instd;
-                            int pid;
+                            int         pid;
+                            Command     cmd;
+                            // Client      *clientlist;  //클라이언트 리스트? 배열? 맵?
     
     setupSocket();
 
@@ -247,7 +249,6 @@ void Server::setupKqueue()
         {
             die("kevent");
         }
-
         for (int i = 0; i < n; ++i)
         {
             if (event_list[i].ident == (unsigned int)_server_fd)
@@ -312,6 +313,9 @@ void Server::setupKqueue()
                     {
                         std::string message = data.substr(0, pos);
                         printf("Received message: %s\n", message.c_str());
+                        
+                        // Process the message ////////////////////////////////
+                        ///////////////////////////////////////////////////////
 
                         pid = fork();
                         if (pid == 0)
@@ -325,9 +329,13 @@ void Server::setupKqueue()
                                 std::cout << "  sending message done" << std::endl;
                             }
                         }
+                        cmd.clearCommand();
+                        cmd.parseCommand(message, client);
+                        cmd.showCommand();
+                        // cmd.execCommand(clientlist);
 
-                        // Process the message ////////////////////////////////
-                        ///////////////////////////////////////////////////////
+
+
                         // ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
                         // printf("Sent %ld bytes\n", sent_bytes);
                         // if (sent_bytes < 0)
