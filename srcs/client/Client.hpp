@@ -31,6 +31,9 @@ class Client
 		bool	isRegist();
 		int		getFd();
 		void	execCommand(Command cmd);
+
+		std::string getHostName() const;
+		std::string getNick() const;
 };
 
 #endif

@@ -100,17 +100,17 @@ void	Command::showCommand()
 	std::cout << std::endl;
 }
 
-std::string	Command::getCommand()
+std::string	Command::getCommand() const
 {
 	return (_command);
 }
 
-std::string	Command::getTag()
+std::string	Command::getTag() const
 {
 	return (_tag);
 }
 
-std::string	Command::getMessage()
+std::string	Command::getMessage() const
 {
 	std::string ret = _command;
 	for (int idx = 0; idx < (int)_parameter.size(); idx++)
@@ -120,7 +120,7 @@ std::string	Command::getMessage()
 	return (ret);
 }
 
-std::string	Command::deparseCommand()
+std::string	Command::deparseCommand() const // ":" 붙는 경우 수정함
 {
 	std::string ret = "";
 	if (!_tag.empty())
@@ -130,11 +130,19 @@ std::string	Command::deparseCommand()
 	ret += _command;
 	for (int idx = 0; idx < (int)_parameter.size(); idx++)
 	{
-		if (idx == 0)
-			ret += " ";
-		else
-			ret += " :";
+		ret += " ";
+		if (idx == (int)_parameter.size() - 1)
+			ret += ":";
 		ret += _parameter[idx];
 	}
+	ret += "\r\n";
 	return (ret);
+}
+
+void	Command::setCommand(std::string tag, std::string source, std::string command, std::vector<std::string> parameter)
+{
+	_command = command;
+	_tag = tag;
+	_source = source;
+	_parameter = parameter;
 }

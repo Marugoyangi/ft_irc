@@ -54,6 +54,16 @@ int Client::getFd()
     return _socket_fd;
 }
 
+std::string Client::getHostName() const
+{
+    return _hostname;
+}
+
+std::string Client::getNick() const
+{
+    return _nick;
+}
+
 void Client::execCommand(Command cmd)
 {
     if (_is_registered == false) // 미인증 상태
