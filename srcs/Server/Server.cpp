@@ -65,9 +65,7 @@ void Server::setupEpoll()
     struct epoll_event events[MAX_EVENTS];
     std::string buffer;
     std::string leftover;
-
-    std::string instd;
-    int pid;
+    Command     cmd;        // 명령어 임시 저장소
 
     setupSocket();
     if ((_event_fd = epoll_create1(0)) == -1) 
@@ -116,7 +114,8 @@ void Server::setupEpoll()
                 {
                     die("epoll_ctl: client");
                 }
-                _clients_fds.insert(client); // FD 추가
+                Client new_client(client, _password);
+                _clients.insert(std::pair<int, Client>(client, new_client)); // 클라이언트 클래스 추가
             }
             else
             {
@@ -132,14 +131,20 @@ void Server::setupEpoll()
                         perror("recv");
                     epoll_ctl(_event_fd, EPOLL_CTL_DEL, client, NULL);
                        close(client);
-                    _clients_fds.erase(client);
+                    std::map<int, Client>::iterator it = _clients.find(client);
+                    if (it != _clients.end()) {
+                        _clients.erase(it);
+                    }
                 }
                 else if (bytes_received == 0)
                 {
                     printf("Client closed connection.\n");
                     epoll_ctl(_event_fd, EPOLL_CTL_DEL, client, NULL);
                     close(client);
-                    _clients_fds.erase(client);
+                    std::map<int, Client>::iterator it = _clients.find(client);
+                    if (it != _clients.end()) {
+                        _clients.erase(it);
+                    }
                 }
                 else
                 {
@@ -148,14 +153,24 @@ void Server::setupEpoll()
                     leftover.clear();
 
                     size_t pos;
+                    std::map<int, Client>::iterator it = _clients.find(client);
+                    Client &tmp_client = it->second;
+                    if (it != _clients.end())
+                        tmp_client = it->second;
+                    else
+                        continue; // 이게 가능한 얘긴가?
                     while ((pos = data.find("\r\n")) != std::string::npos || (pos = data.find("\n")) != std::string::npos)
                     {
-                        
                         std::string message = data.substr(0, pos);
                         printf("Received message: %s\n", message.c_str());
-
+                        
                         // Process the message ////////////////////////////////
                         ///////////////////////////////////////////////////////
+                        cmd.clearCommand();
+                        cmd.parseCommand(message);
+                        cmd.showCommand();
+                        tmp_client.execCommand(cmd);
+                        
                         // ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
                         // printf("Sent %ld bytes\n", sent_bytes);
                         // if (sent_bytes < 0)
@@ -183,11 +198,11 @@ void Server::stopEpoll()
 {
     epoll_ctl(_event_fd, EPOLL_CTL_DEL, _server_fd, NULL);
     close(_server_fd);
-    std::set<int>::iterator it;
-    for (it = _clients_fds.begin(); it != _clients_fds.end(); ++it) {
-        int client_fd = *it;
-         epoll_ctl(_event_fd, EPOLL_CTL_DEL, client_fd, NULL);
-         close(client_fd);
+    std::map<int, Client>::iterator it;
+    for (it = _clients.begin(); it != _clients.end(); ++it) {
+        int client_fd = it->first;
+        epoll_ctl(_event_fd, EPOLL_CTL_DEL, client_fd, NULL);
+        close(client_fd);
     }
     close(_event_fd);
 }
