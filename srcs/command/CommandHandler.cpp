@@ -21,7 +21,9 @@ CommandHandler &CommandHandler::operator=(const CommandHandler &other)
 void CommandHandler::execute(Command &cmd, Client &client)
 {
     std::string command = cmd.getCommand();
-    
+    std::string _message;
+    std::vector<std::string> _tem;
+
     if (client.get_is_registered() == false)
     {
         if (command == "PASS")
@@ -78,7 +80,19 @@ void CommandHandler::execute(Command &cmd, Client &client)
         }
         else if (command == "JOIN")
         {
-            // JOIN command
+            if (cmd.getParameter().size() < 1)
+            {
+                _tem.push_back("JOIN");
+                _message += com461(client, _cmd);
+                return;
+            }
+            _tem.push_back(param[0]);
+            _cmd.setCommand("", client.get_hostname(), "JOIN", _tem);
+            _message = _cmd.deparseCommand();
+            _message += com332(client, _cmd);
+            _message += com333(client, _cmd);
+            _message += com353(client, _cmd);
+            _message += com366(client, _cmd);
         }
         else if (command == "PART")
         {
