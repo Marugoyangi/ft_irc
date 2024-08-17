@@ -8,9 +8,9 @@ class Command
 {
 	private:
 		int			_numeric;
-		std::string _command;
 		std::string _tag;
 		std::string _source;
+		std::string _command;
 		std::vector<std::string> _parameter;
 
 	public:
@@ -21,9 +21,11 @@ class Command
 
 		void		clearCommand();
 		void		parseCommand(std::string command);
-		std::string	getCommand();
-		std::string	getTag();
-		std::string	getMessage();
+		void		setCommand(std::string tag, std::string source, std::string command, std::vector<std::string> parameter);
+		std::string	deparseCommand() const;
+		std::string	getCommand() const;
+		std::string	getTag() const;
+		std::string	getMessage() const;
 
 		void	showCommand();
 };

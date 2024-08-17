@@ -93,42 +93,42 @@ void Client::set_socket_fd(int fd)
     _socket_fd = fd;
 }
 
-std::string Client::get_username()
+std::string Client::get_username() const
 {
     return _username;
 }
 
-std::string Client::get_realname()
+std::string Client::get_realname() const
 {
     return _realname;
 }
 
-std::string Client::get_hostname()
+std::string Client::get_hostname() const
 {
     return _hostname;
 }
 
-std::string Client::get_mode()
+std::string Client::get_mode() const
 {
     return _mode;
 }
 
-std::string Client::get_ip()
+std::string Client::get_ip() const
 {
     return _ip;
 }
 
-std::string Client::get_password()
+std::string Client::get_password() const
 {
     return _password;
 }
 
-std::string Client::get_try_password()
+std::string Client::get_try_password() const
 {
     return _try_password;
 }
 
-int Client::get_socket_fd()
+int Client::get_socket_fd() const
 {
     return _socket_fd;
 }
@@ -153,22 +153,22 @@ void Client::set_last_active_time(time_t last_active_time)
     _last_active_time = last_active_time;
 }
 
-bool Client::get_is_registered()
+bool Client::get_is_registered() const
 {
     return _is_registered;
 }
 
-bool Client::get_is_passed()
+bool Client::get_is_passed() const
 {
     return _is_passed;
 }
 
-time_t Client::get_established_time()
+time_t Client::get_established_time() const
 {
     return _established_time;
 }
 
-time_t Client::get_last_active_time()
+time_t Client::get_last_active_time() const
 {
     return _last_active_time;
 }

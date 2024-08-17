@@ -347,7 +347,6 @@ void Server::setupKqueue()
     stopKqueue(); // Clean up
 }
 
-
 void Server::stopKqueue()
 {
     close(_server_fd);

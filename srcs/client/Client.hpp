@@ -44,22 +44,23 @@ class Client
 		void		set_is_passed(bool is_passed);
 		void		set_established_time(time_t established_time);
 		void		set_last_active_time(time_t last_active_time);
-		std::string	get_username();
-		std::string	get_realname();
-		std::string	get_hostname();
-		std::string	get_mode();
-		std::string	get_ip();
-		std::string	get_password();
-		std::string	get_try_password();
-		int			get_socket_fd();
-		bool		get_is_registered();
-		bool		get_is_passed();
-		time_t		get_established_time();
-		time_t		get_last_active_time();
+		std::string	get_username() const;
+		std::string	get_realname() const;
+		std::string	get_hostname() const;
+		std::string	get_mode() const;
+		std::string	get_ip() const;
+		std::string	get_password() const;
+		std::string	get_try_password() const;
+		int			get_socket_fd() const;
+		bool		get_is_registered() const;
+		bool		get_is_passed() const;
+		time_t		get_established_time() const;
+		time_t		get_last_active_time() const;
 
 		//debug
 
 		void	showClient();
+
 };
 
 #endif

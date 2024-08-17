@@ -103,21 +103,49 @@ void	Command::showCommand()
 	std::cout << std::endl;
 }
 
-std::string	Command::getCommand()
+std::string	Command::getCommand() const
 {
 	return (_command);
 }
 
-std::string	Command::getTag()
+std::string	Command::getTag() const
 {
 	return (_tag);
 }
 
-std::string Command::getMessage() {
-    // 벡터가 비어있지 않다면 마지막 파라미터를 반환
-    if (!_parameter.empty()) {
-        return _parameter.back();
-    } else {
-        return ""; // 벡터가 비어있으면 빈 문자열 반환
-    }
+std::string	Command::getMessage() const
+{
+	std::string ret = _command;
+	for (int idx = 0; idx < (int)_parameter.size(); idx++)
+	{
+		ret += " " + _parameter[idx];
+	}
+	return (ret);
+}
+
+std::string	Command::deparseCommand() const // ":" 붙는 경우 수정함
+{
+	std::string ret = "";
+	if (!_tag.empty())
+		ret += "@" + _tag + " ";
+	if (!_source.empty())
+		ret += ":" + _source + " ";
+	ret += _command;
+	for (int idx = 0; idx < (int)_parameter.size(); idx++)
+	{
+		ret += " ";
+		if (idx == (int)_parameter.size() - 1)
+			ret += ":";
+		ret += _parameter[idx];
+	}
+	ret += "\r\n";
+	return (ret);
+}
+
+void	Command::setCommand(std::string tag, std::string source, std::string command, std::vector<std::string> parameter)
+{
+	_command = command;
+	_tag = tag;
+	_source = source;
+	_parameter = parameter;
 }

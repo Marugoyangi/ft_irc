@@ -21,6 +21,7 @@ CommandHandler &CommandHandler::operator=(const CommandHandler &other)
 void CommandHandler::execute(Command &cmd, Client &client)
 {
     std::string command = cmd.getCommand();
+    
     if (client.get_is_registered() == false)
     {
         if (command == "PASS")
