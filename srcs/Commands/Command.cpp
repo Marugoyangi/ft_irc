@@ -38,19 +38,23 @@ void	Command::clearCommand()
 	_parameter.clear();
 }
 
-void	Command::parseCommand(std::string command, int fd)
-{
+void Command::parseCommand(std::string command, int fd){
 	_fd = fd;
-	int	pos;
 	std::vector<std::string> spl;
-	
-	pos = 0;
-	while ((pos=command.find(" ", pos)) != (int)std::string::npos)
-	{
-		spl.push_back(command.substr(0, pos));
-		command = command.substr(pos + 1);
+	size_t pos = 0;
+
+	while ((pos = command.find(' ')) != std::string::npos) { // 공백을 기준으로 문자열을 나눔
+		if (pos > 0) {
+			// 공백이 아닌 부분을 벡터에 추가
+			spl.push_back(command.substr(0, pos));
+		}
+		// 다음 부분으로 이동
+		command.erase(0, pos + 1);
 	}
-	spl.push_back(command);
+
+	if (!command.empty()) // 마지막 부분 추가
+		spl.push_back(command);
+
 	for (int idx = 0; idx < (int)spl.size(); idx++)
 	{
 		if (idx == 0 && spl[idx][0] == '@')
@@ -64,11 +68,9 @@ void	Command::parseCommand(std::string command, int fd)
 		}
 		else if (idx == 0 && spl[idx][0] == ':')
 			_source = spl[idx].substr(1);
-		else if (spl[idx][0] == ':' && _command != "")
+		else if (spl[idx][0] == ':' && !_command.empty())
 		{
-			std::string tem = "";
-
-			tem = spl[idx].substr(1);
+			std::string tem = spl[idx].substr(1);
 			idx++;
 			while (idx < (int)spl.size())
 			{
@@ -78,12 +80,13 @@ void	Command::parseCommand(std::string command, int fd)
 			_parameter.push_back(tem);
 			break;
 		}
-		else if (_command == "")
+		else if (_command.empty())
 			_command = spl[idx];
 		else
 			_parameter.push_back(spl[idx]);
-	}	
-}
+	}
+}	
+
 
 void	Command::showCommand()
 {
@@ -92,12 +95,18 @@ void	Command::showCommand()
 	std::cout << "\t\tCommand : " << _command << std::endl;
 	std::cout << "\t\tParameter : ";
 	for (int idx = 0; idx < (int)_parameter.size(); idx++)
-		std::cout << _parameter[idx] << ", ";
+	{
+		if (idx == (int)_parameter.size() - 1)
+			std::cout << _parameter[idx];
+		else
+			std::cout << _parameter[idx] << ", ";
+	}
 	std::cout << std::endl;
 }
 
 void	Command::execCommand(Client const *clientlist)
 {
+	(void) clientlist;
 	if (_command == "NICK")
 	{
 		// NICK
