@@ -18,8 +18,9 @@
 # include <vector>
 # include <map>
 # include <algorithm>
-# include "../client/Client.hpp"
 # include "../command/Command.hpp"
+# include "../command/CommandHandler.hpp"
+# include "../client/Client.hpp"
 
 # ifdef __APPLE__
 #  include <sys/event.h>
@@ -44,7 +45,7 @@ class Server
         std::string		_password;
         tm				*_time_local;
         int             _server_fd;
-        int                 _event_fd;
+        int             _event_fd;
         std::map<int, Client> _clients;
 
         // std::set<ClientCommand> _clients;

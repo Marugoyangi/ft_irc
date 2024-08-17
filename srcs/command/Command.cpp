@@ -3,6 +3,7 @@
 // OCCF START
 Command::Command() 
 {
+	_numeric = 0;
 	_command = "";
 	_tag = "";
 	_source = "";
@@ -20,6 +21,7 @@ Command &Command::operator=(const Command &other)
 {
 	if (this == &other)
 		return (*this);
+	_numeric = other._numeric;
 	_command = other._command;
 	_tag = other._tag;
 	_source = other._source;
@@ -30,6 +32,7 @@ Command &Command::operator=(const Command &other)
 
 void	Command::clearCommand()
 {
+	_numeric = 0;
 	_command = "";
 	_tag = "";
 	_source = "";

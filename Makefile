@@ -1,5 +1,5 @@
 NAME = ircserv
-SRCS = ./srcs/main.cpp ./srcs/server/Server.cpp ./srcs/command/Command.cpp ./srcs/client/Client.cpp
+SRCS = ./srcs/main.cpp ./srcs/server/Server.cpp ./srcs/command/Command.cpp ./srcs/client/Client.cpp ./srcs/command/CommandHandler.cpp
 OBJS = $(SRCS:.cpp=.o)
 C++ = c++
 FLAGS = -Wall -Wextra -Werror -std=c++98 -I. -g3

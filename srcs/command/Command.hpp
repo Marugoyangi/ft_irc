@@ -2,15 +2,12 @@
 # define COMMAND_HPP
 
 # include "../server/Server.hpp"
-# include "../client/Client.hpp"
-
 
 class Client;
-
 class Command 
 {
 	private:
-		//int			_numeric;
+		int			_numeric;
 		std::string _tag;
 		std::string _source;
 		std::string _command;
