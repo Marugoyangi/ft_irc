@@ -1,9 +1,8 @@
 #ifndef CLIENT_HPP
 # define CLIENT_HPP
 
-# include <iostream>
-# include <ctime>
-# include <../command/Command.hpp>
+# include "../server/Server.hpp"
+# include "../command/Command.hpp"
 
 class Command;
 class Client

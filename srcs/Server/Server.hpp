@@ -15,11 +15,11 @@
 # include <netinet/in.h>
 # include <netdb.h>
 # include <unistd.h>
+# include <vector>
 # include <map>
 # include <algorithm>
 # include "../client/Client.hpp"
 # include "../command/Command.hpp"
-// # include "Client.hpp"
 
 # ifdef __APPLE__
 #  include <sys/event.h>
@@ -36,6 +36,7 @@ extern void die(const char* msg);
 # define BACKLOG     10
 # define BUFFER_SIZE 512
 
+class Client;
 class Server
 {
     private:

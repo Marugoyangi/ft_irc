@@ -104,3 +104,18 @@ std::string	Command::getCommand()
 {
 	return (_command);
 }
+
+std::string	Command::getTag()
+{
+	return (_tag);
+}
+
+std::string	Command::getMessage()
+{
+	std::string ret = _command;
+	for (int idx = 0; idx < (int)_parameter.size(); idx++)
+	{
+		ret += " " + _parameter[idx];
+	}
+	return (ret);
+}
