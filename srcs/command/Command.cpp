@@ -119,3 +119,22 @@ std::string	Command::getMessage()
 	}
 	return (ret);
 }
+
+std::string	Command::deparseCommand()
+{
+	std::string ret = "";
+	if (!_tag.empty())
+		ret += "@" + _tag + " ";
+	if (!_source.empty())
+		ret += ":" + _source + " ";
+	ret += _command;
+	for (int idx = 0; idx < (int)_parameter.size(); idx++)
+	{
+		if (idx == 0)
+			ret += " ";
+		else
+			ret += " :";
+		ret += _parameter[idx];
+	}
+	return (ret);
+}
