@@ -292,6 +292,9 @@ void Server::setupKqueue()
                     leftover.clear();
                     
                     size_t pos;
+                    std::map<int, Client>::iterator it = _clients.find(client);
+                    if (it != _clients.end())
+                        Client& __client = it->second;
                     while ((pos = data.find("\r\n")) != std::string::npos || (pos = data.find("\n")) != std::string::npos)
                     {
                         std::string message = data.substr(0, pos);
@@ -302,11 +305,7 @@ void Server::setupKqueue()
                         cmd.clearCommand();
                         cmd.parseCommand(message);
                         cmd.showCommand();
-                        std::map<int, Client>::iterator it = _clients.find(client);
-                        if (it != _clients.end()) {
-                            Client& __client = it->second;
-                            __client.execCommand(cmd);
-                        }
+                        __client.execCommand(cmd);
                         // cmd.execCommand(clientlist);
 
                         // ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
