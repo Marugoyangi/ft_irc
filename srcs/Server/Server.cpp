@@ -100,8 +100,7 @@ void Server::setupEpoll()
                     continue;
                 }
                 // Set the client socket timeout to 15 seconds
-                struct timeval tv;
-                tv.tv_sec = 15;
+                struct timeval tv = {15, 0};
                 if (setsockopt(client, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv) < 0)
                     die("setsockopt");
                 // Set the client socket to non-blocking mode
@@ -199,7 +198,7 @@ void Server::stopEpoll()
 
 void Server::setupKqueue()
 {
-    struct kevent change_list[MAX_EVENTS];
+    struct kevent change_list;
     struct kevent event_list[MAX_EVENTS];
     std::string buffer;
     std::string leftover;
@@ -214,9 +213,9 @@ void Server::setupKqueue()
     }
 
     // 서버 소켓을 kqueue에 등록 (readable 이벤트)
-    EV_SET(&change_list[0], _server_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+    EV_SET(&change_list, _server_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
 
-    if (kevent(_event_fd, change_list, 1, NULL, 0, NULL) == -1)
+    if (kevent(_event_fd, &change_list, 1, NULL, 0, NULL) == -1)
     {
         die("kevent: listen_sock");
     }
@@ -243,8 +242,7 @@ void Server::setupKqueue()
                     continue;
                 }
                 // Set the client socket timeout to 15 seconds
-                struct timeval tv;
-                tv.tv_sec = 15;
+                struct timeval tv = {15, 0};
                 if (setsockopt(client, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv) < 0)
                     die("setsockopt");
                 // 클라이언트 소켓을 non-blocking으로 설정
@@ -252,8 +250,8 @@ void Server::setupKqueue()
                     die("fcntl");
 
                 // 새 클라이언트 소켓을 kqueue에 등록 (readable 이벤트)
-                EV_SET(&change_list[0], client, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-                if (kevent(_event_fd, change_list, 1, NULL, 0, NULL) == -1)
+                EV_SET(&change_list, client, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+                if (kevent(_event_fd, &change_list, 1, NULL, 0, NULL) == -1)
                 {
                     die("kevent: client");
                 }
@@ -268,16 +266,16 @@ void Server::setupKqueue()
                 if (bytes_received < 0)
                 {
                     perror("recv");
-                    EV_SET(&change_list[0], client, EVFILT_READ, EV_DELETE, 0, 0, NULL);
-                    kevent(_event_fd, change_list, 1, NULL, 0, NULL);
+                    EV_SET(&change_list, client, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+                    kevent(_event_fd, &change_list, 1, NULL, 0, NULL);
                     close(client);
                     _clients_fds.erase(client);
                 }
                 else if (bytes_received == 0)
                 {
                     printf("Client closed connection.\n");
-                    EV_SET(&change_list[0], client, EVFILT_READ, EV_DELETE, 0, 0, NULL);
-                    kevent(_event_fd, change_list, 1, NULL, 0, NULL);
+                    EV_SET(&change_list, client, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+                    kevent(_event_fd, &change_list, 1, NULL, 0, NULL);
                     close(client);
                     _clients_fds.erase(client);
                 }

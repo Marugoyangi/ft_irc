@@ -35,7 +35,7 @@ int main (int argc, char **argv)
 	{
         check_os();
 		// get current time
-		time_t time_raw;
+		time_t time_raw = {0};
 		tm *time_local;
 
 		time(&time_raw);
