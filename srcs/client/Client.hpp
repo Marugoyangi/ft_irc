@@ -3,7 +3,9 @@
 
 # include <iostream>
 # include <ctime>
+# include <../command/Command.hpp>
 
+class Command;
 class Client
 {
 	private :
@@ -29,6 +31,7 @@ class Client
 
 		bool	isRegist();
 		int		getFd();
+		void	execCommand(Command cmd);
 };
 
 #endif

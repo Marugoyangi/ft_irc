@@ -156,19 +156,6 @@ void Server::setupEpoll()
 
                         // Process the message ////////////////////////////////
                         ///////////////////////////////////////////////////////
-
-                        pid = fork();
-                        if (pid == 0)
-                        {
-                            while (1) 
-                            {
-                                std::cout << "message to send: ";
-                                std::getline(std::cin, instd);
-                                message = instd;
-                                send(client, message.c_str(), message.size(), 0);
-                                std::cout << "  sending message done" << std::endl;
-                            }
-                        }
                         // ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
                         // printf("Sent %ld bytes\n", sent_bytes);
                         // if (sent_bytes < 0)
@@ -208,21 +195,13 @@ void Server::stopEpoll()
 
 
 #ifdef __APPLE__
-#include <sys/types.h>
-#include <sys/event.h>
-#include <sys/time.h>
-
 void Server::setupKqueue()
 {
     struct kevent change_list;
     struct kevent event_list[MAX_EVENTS];
     std::string buffer;
     std::string leftover;
-
-                            std::string instd;
-                            int         pid;
-                            Command     cmd;        // 명령어 임시 저장소
-                            // Client      *clientlist;  //클라이언트 리스트? 배열? 맵?
+    Command     cmd;        // 명령어 임시 저장소
     
     setupSocket();
 
@@ -320,22 +299,14 @@ void Server::setupKqueue()
                         
                         // Process the message ////////////////////////////////
                         ///////////////////////////////////////////////////////
-
-                        // pid = fork();
-                        // if (pid == 0)
-                        // {
-                        //     while (1) 
-                        //     {
-                        //         std::cout << "message to send: ";
-                        //         std::getline(std::cin, instd);
-                        //         message = instd + "\r\n";
-                        //         send(client, message.c_str(), message.size(), 0);
-                        //         std::cout << "  sending message done" << std::endl;
-                        //     }
-                        // }
                         cmd.clearCommand();
                         cmd.parseCommand(message);
                         cmd.showCommand();
+                        std::map<int, Client>::iterator it = _clients.find(client);
+                        if (it != _clients.end()) {
+                            Client& __client = it->second;
+                            __client.execCommand(cmd);
+                        }
                         // cmd.execCommand(clientlist);
 
                         // ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);

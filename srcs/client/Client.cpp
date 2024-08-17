@@ -53,3 +53,30 @@ int Client::getFd()
 {
     return _socket_fd;
 }
+
+void Client::execCommand(Command cmd)
+{
+    if (_is_registered == false) // 미인증 상태
+    {
+        if (cmd.getCommand() == "PASS")
+        {
+            _password = cmd.getMessage();
+        }
+        if (cmd.getCommand() == "NICK")
+        {
+            _nick = cmd.getMessage();
+        }
+        else if (cmd.getCommand() == "USER")
+        {
+            _realname = cmd.getMessage();
+        }
+        else
+        {
+            // send error
+        }
+    }
+    else
+    {
+        // 인증된 사용자 처리
+    }
+}

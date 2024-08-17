@@ -100,23 +100,7 @@ void	Command::showCommand()
 	std::cout << std::endl;
 }
 
-void	Command::execCommand(Client const *clientlist)
+std::string	Command::getCommand()
 {
-	(void) clientlist;
-	if (_command == "NICK")
-	{
-		// NICK
-	}
-	else if (_command == "USER")
-	{
-		// USER
-	}
-	else if (_command == "QUIT")
-	{
-		// QUIT
-	}
-	else if (_command == "JOIN")
-	{
-		// JOIN
-	}
+	return (_command);
 }

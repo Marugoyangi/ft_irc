@@ -8,13 +8,14 @@ class Client;
 
 class Command 
 {
-	private :
+	private:
+		int			_numeric;
 		std::string _command;
 		std::string _tag;
 		std::string _source;
 		std::vector<std::string> _parameter;
 
-	public :
+	public:
 		Command();
 		~Command();
 		Command &operator=(const Command &other);
@@ -22,7 +23,7 @@ class Command
 
 		void		clearCommand();
 		void		parseCommand(std::string command);
-		void		execCommand(Client const *clientlist);
+		std::string	deparseCommand(Command cmd);
 		std::string	getCommand();
 		std::string	getTag();
 		std::string	getMessage();
