@@ -161,16 +161,16 @@ void Server::setupEpoll()
                         continue; // 이게 가능한 얘긴가?
                     while ((pos = data.find("\r\n")) != std::string::npos || (pos = data.find("\n")) != std::string::npos)
                     {
+                        
                         std::string message = data.substr(0, pos);
                         printf("Received message: %s\n", message.c_str());
-                        
+
                         // Process the message ////////////////////////////////
                         ///////////////////////////////////////////////////////
                         cmd.clearCommand();
                         cmd.parseCommand(message);
                         cmd.showCommand();
                         tmp_client.execCommand(cmd);
-                        
                         // ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
                         // printf("Sent %ld bytes\n", sent_bytes);
                         // if (sent_bytes < 0)

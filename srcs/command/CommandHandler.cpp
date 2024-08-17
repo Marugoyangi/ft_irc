@@ -151,13 +151,15 @@ void CommandHandler::reply(int fd, int numeric, std::string message)
 {
     std::string reply;
     std::string tail = ":" + message + "\r\n";
+    std::stringstream ss;
+    ss << numeric;
     if (numeric == 0)
     {
         reply = ":irc.local " + tail;
     }
     else
     {
-        reply = ":irc.local " + std::to_string(numeric) + " " + tail;
+        reply = ":irc.local " + ss.str() + " " + tail;
     }
     send(fd, reply.c_str(), reply.length(), 0);
 }
