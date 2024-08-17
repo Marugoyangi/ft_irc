@@ -2,11 +2,8 @@
 # define COMMAND_HPP
 
 # include "../server/Server.hpp"
-# include "../client/Client.hpp"
-
 
 class Client;
-
 class Command 
 {
 	private:

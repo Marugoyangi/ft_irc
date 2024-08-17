@@ -3,6 +3,7 @@
 // OCCF START
 Command::Command() 
 {
+	_numeric = 0;
 	_command = "";
 	_tag = "";
 	_source = "";
@@ -20,6 +21,7 @@ Command &Command::operator=(const Command &other)
 {
 	if (this == &other)
 		return (*this);
+	_numeric = other._numeric;
 	_command = other._command;
 	_tag = other._tag;
 	_source = other._source;
@@ -30,6 +32,7 @@ Command &Command::operator=(const Command &other)
 
 void	Command::clearCommand()
 {
+	_numeric = 0;
 	_command = "";
 	_tag = "";
 	_source = "";
@@ -110,14 +113,13 @@ std::string	Command::getTag()
 	return (_tag);
 }
 
-std::string	Command::getMessage()
-{
-	std::string ret = _command;
-	for (int idx = 0; idx < (int)_parameter.size(); idx++)
-	{
-		ret += " " + _parameter[idx];
-	}
-	return (ret);
+std::string Command::getMessage() {
+    // 벡터가 비어있지 않다면 마지막 파라미터를 반환
+    if (!_parameter.empty()) {
+        return _parameter.back();
+    } else {
+        return ""; // 벡터가 비어있으면 빈 문자열 반환
+    }
 }
 
 std::string	Command::deparseCommand()
@@ -127,6 +129,8 @@ std::string	Command::deparseCommand()
 		ret += "@" + _tag + " ";
 	if (!_source.empty())
 		ret += ":" + _source + " ";
+	if (_numeric != 0)
+		ret += std::to_string(_numeric) + " ";
 	ret += _command;
 	for (int idx = 0; idx < (int)_parameter.size(); idx++)
 	{

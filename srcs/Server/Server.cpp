@@ -254,7 +254,7 @@ void Server::setupKqueue()
                 {
                     die("kevent: client");
                 }
-                Client new_client(client);
+                Client new_client(client, _password);
                 _clients.insert(std::pair<int, Client>(client, new_client)); // 클라이언트 클래스 추가
             }
             else // 클라이언트 소켓에서 이벤트 발생
@@ -307,6 +307,7 @@ void Server::setupKqueue()
                         ///////////////////////////////////////////////////////
                         cmd.clearCommand();
                         cmd.parseCommand(message);
+                        cmd.showCommand();
                         tmp_client.execCommand(cmd);
                         // ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
                         // printf("Sent %ld bytes\n", sent_bytes);

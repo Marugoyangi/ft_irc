@@ -18,8 +18,9 @@
 # include <vector>
 # include <map>
 # include <algorithm>
-# include "../client/Client.hpp"
 # include "../command/Command.hpp"
+# include "../command/CommandHandler.hpp"
+# include "../client/Client.hpp"
 
 # ifdef __APPLE__
 #  include <sys/event.h>
