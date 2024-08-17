@@ -14,7 +14,7 @@ Server &Server::operator=(const Server &other)
         _time_local = other._time_local;
         _server_fd = other._server_fd;
         _event_fd = other._event_fd;
-        _clients_fds = other._clients_fds;
+        _clients = other._clients;
     }
     return *this;
 }
@@ -221,7 +221,7 @@ void Server::setupKqueue()
 
                             std::string instd;
                             int         pid;
-                            Command     cmd;
+                            Command     cmd;        // 명령어 임시 저장소
                             // Client      *clientlist;  //클라이언트 리스트? 배열? 맵?
     
     setupSocket();
@@ -275,9 +275,10 @@ void Server::setupKqueue()
                 {
                     die("kevent: client");
                 }
-                _clients_fds.insert(client); // FD 추가
+                Client new_client(client);
+                _clients.insert(std::pair<int, Client>(client, new_client)); // 클라이언트 클래스 추가
             }
-            else
+            else // 클라이언트 소켓에서 이벤트 발생
             {
                 int client = event_list[i].ident;
                 buffer.resize(BUFFER_SIZE);
@@ -289,7 +290,10 @@ void Server::setupKqueue()
                     EV_SET(&change_list, client, EVFILT_READ, EV_DELETE, 0, 0, NULL);
                     kevent(_event_fd, &change_list, 1, NULL, 0, NULL);
                     close(client);
-                    _clients_fds.erase(client);
+                    std::map<int, Client>::iterator it = _clients.find(client);
+                    if (it != _clients.end()) {
+                        _clients.erase(it);
+                    }
                 }
                 else if (bytes_received == 0)
                 {
@@ -297,7 +301,10 @@ void Server::setupKqueue()
                     EV_SET(&change_list, client, EVFILT_READ, EV_DELETE, 0, 0, NULL);
                     kevent(_event_fd, &change_list, 1, NULL, 0, NULL);
                     close(client);
-                    _clients_fds.erase(client);
+                    std::map<int, Client>::iterator it = _clients.find(client);
+                    if (it != _clients.end()) {
+                        _clients.erase(it);
+                    }
                 }
                 else
                 {
@@ -314,24 +321,22 @@ void Server::setupKqueue()
                         // Process the message ////////////////////////////////
                         ///////////////////////////////////////////////////////
 
-                        pid = fork();
-                        if (pid == 0)
-                        {
-                            while (1) 
-                            {
-                                std::cout << "message to send: ";
-                                std::getline(std::cin, instd);
-                                message = instd + "\r\n";
-                                send(client, message.c_str(), message.size(), 0);
-                                std::cout << "  sending message done" << std::endl;
-                            }
-                        }
+                        // pid = fork();
+                        // if (pid == 0)
+                        // {
+                        //     while (1) 
+                        //     {
+                        //         std::cout << "message to send: ";
+                        //         std::getline(std::cin, instd);
+                        //         message = instd + "\r\n";
+                        //         send(client, message.c_str(), message.size(), 0);
+                        //         std::cout << "  sending message done" << std::endl;
+                        //     }
+                        // }
                         cmd.clearCommand();
-                        cmd.parseCommand(message, client);
+                        cmd.parseCommand(message);
                         cmd.showCommand();
                         // cmd.execCommand(clientlist);
-
-
 
                         // ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
                         // printf("Sent %ld bytes\n", sent_bytes);
@@ -356,12 +361,13 @@ void Server::setupKqueue()
     stopKqueue(); // Clean up
 }
 
+
 void Server::stopKqueue()
 {
     close(_server_fd);
-    std::set<int>::iterator it;
-    for (it = _clients_fds.begin(); it != _clients_fds.end(); ++it) {
-        int client_fd = *it;
+    std::map<int, Client>::iterator it;
+    for (it = _clients.begin(); it != _clients.end(); ++it) {
+        int client_fd = it->first;
         close(client_fd);
     }
     close(_event_fd);

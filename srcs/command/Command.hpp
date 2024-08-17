@@ -9,7 +9,6 @@ class Client;
 class Command 
 {
 	private :
-		int 		_fd;
 		std::string _command;
 		std::string _tag;
 		std::string _source;
@@ -22,7 +21,7 @@ class Command
 		Command(const Command &other);
 
 		void		clearCommand();
-		void		parseCommand(std::string command, int fd);
+		void		parseCommand(std::string command);
 		void		execCommand(Client const *clientlist);
 		std::string	getCommand();
 		std::string	getTag();

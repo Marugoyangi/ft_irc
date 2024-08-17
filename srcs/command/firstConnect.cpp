@@ -1,4 +1,4 @@
-#include "../Server/Server.hpp"
+#include "../server/Server.hpp"
 
 //accept 하자마자 실행됨
 //호스트 이름이랑 ip주소랑 비교하는데 이 과정 없어도 작동 잘함.

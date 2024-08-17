@@ -1,4 +1,4 @@
-#include "./Server/Server.hpp"
+#include "./server/Server.hpp"
 
 // global variable to check if the server is shutting down
 volatile sig_atomic_t g_shutdown = false;

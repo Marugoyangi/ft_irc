@@ -15,8 +15,10 @@
 # include <netinet/in.h>
 # include <netdb.h>
 # include <unistd.h>
-
-# include "../Commands/Command.hpp"
+# include <map>
+# include <algorithm>
+# include "../client/Client.hpp"
+# include "../command/Command.hpp"
 // # include "Client.hpp"
 
 # ifdef __APPLE__
@@ -41,8 +43,8 @@ class Server
         std::string		_password;
         tm				*_time_local;
         int             _server_fd;
-        int             _event_fd;
-        std::set<int>   _clients_fds;
+        int                 _event_fd;
+        std::map<int, Client> _clients;
 
         // std::set<ClientCommand> _clients;
 

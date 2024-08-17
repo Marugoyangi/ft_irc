@@ -1,6 +1,6 @@
-#include "../Server/Client.hpp"
-#include "../Server/Server.hpp"
-#include "../Server/Command.hpp"
+#include "../client/Client.hpp"
+#include "../server/Server.hpp"
+#include "Command.hpp"
 
 void	comJoin(Client client, Command const &cmd)
 {

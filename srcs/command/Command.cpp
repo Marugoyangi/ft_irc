@@ -3,10 +3,10 @@
 // OCCF START
 Command::Command() 
 {
-	_fd = -1;
 	_command = "";
 	_tag = "";
 	_source = "";
+	_parameter.clear();
 }
 
 Command::~Command() {}
@@ -20,7 +20,6 @@ Command &Command::operator=(const Command &other)
 {
 	if (this == &other)
 		return (*this);
-	_fd = other._fd;
 	_command = other._command;
 	_tag = other._tag;
 	_source = other._source;
@@ -31,15 +30,13 @@ Command &Command::operator=(const Command &other)
 
 void	Command::clearCommand()
 {
-	_fd = -1;
 	_command = "";
 	_tag = "";
 	_source = "";
 	_parameter.clear();
 }
 
-void Command::parseCommand(std::string command, int fd){
-	_fd = fd;
+void Command::parseCommand(std::string command){
 	std::vector<std::string> spl;
 	size_t pos = 0;
 
@@ -86,7 +83,6 @@ void Command::parseCommand(std::string command, int fd){
 			_parameter.push_back(spl[idx]);
 	}
 }	
-
 
 void	Command::showCommand()
 {
