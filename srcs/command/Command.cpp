@@ -121,24 +121,3 @@ std::string Command::getMessage() {
         return ""; // 벡터가 비어있으면 빈 문자열 반환
     }
 }
-
-std::string	Command::deparseCommand()
-{
-	std::string ret = "";
-	if (!_tag.empty())
-		ret += "@" + _tag + " ";
-	if (!_source.empty())
-		ret += ":" + _source + " ";
-	if (_numeric != 0)
-		ret += std::to_string(_numeric) + " ";
-	ret += _command;
-	for (int idx = 0; idx < (int)_parameter.size(); idx++)
-	{
-		if (idx == 0)
-			ret += " ";
-		else
-			ret += " :";
-		ret += _parameter[idx];
-	}
-	return (ret);
-}

@@ -20,7 +20,6 @@ CommandHandler &CommandHandler::operator=(const CommandHandler &other)
 
 void CommandHandler::execute(Command &cmd, Client &client)
 {
-    (void)client;
     std::string command = cmd.getCommand();
     if (client.get_is_registered() == false)
     {
@@ -33,17 +32,17 @@ void CommandHandler::execute(Command &cmd, Client &client)
                 if (client.get_username() == "")
                     client.set_username(cmd.getMessage());
                 else
-                    ; // ERR_ALREADYREGISTERED
+                    reply(client.get_socket_fd(), 433, "ERR_NICKNAMEINUSE");
             }
             else
-                std::cout << "ERR_PASSWDMISMATCH" << std::endl;
+                reply(client.get_socket_fd(), 464, "ERR_PASSWDMISMATCH");
         }
         else if (command == "USER")
         {
             if (client.get_try_password() == client.get_password())
             {
                 if (client.get_username() == "")
-                    ;// ERR_NEEDMOREPARAMS
+                    reply(client.get_socket_fd(), 451, "ERR_NOTREGISTERED");
                 else
                 {
                     client.set_realname(cmd.getMessage());
@@ -51,14 +50,14 @@ void CommandHandler::execute(Command &cmd, Client &client)
                 }
             }
             else
-                std::cout << "ERR_PASSWDMISMATCH" << std::endl;
+                reply(client.get_socket_fd(), 464, "ERR_PASSWDMISMATCH");
         }
         else
         {
-            ;// ERR_NOTREGISTERED
+            reply(client.get_socket_fd(), 451, "ERR_NOTREGISTERED");
         }
     }
-    else
+    else ///////////////////// when client is registered
     {
         if (command == "PASS")
         {
@@ -146,4 +145,19 @@ void CommandHandler::execute(Command &cmd, Client &client)
         }
     }
     client.showClient();
+}
+
+void CommandHandler::reply(int fd, int numeric, std::string message)
+{
+    std::string reply;
+    std::string tail = ":" + message + "\r\n";
+    if (numeric == 0)
+    {
+        reply = ":irc.local " + tail;
+    }
+    else
+    {
+        reply = ":irc.local " + std::to_string(numeric) + " " + tail;
+    }
+    send(fd, reply.c_str(), reply.length(), 0);
 }

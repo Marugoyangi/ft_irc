@@ -14,5 +14,6 @@ class CommandHandler
         CommandHandler &operator=(const CommandHandler &other);
 
         void execute(Command &cmd, Client &client);
+        void reply(int numeric, int fd, std::string message);
 };
 #endif

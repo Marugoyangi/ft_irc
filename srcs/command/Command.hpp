@@ -21,7 +21,6 @@ class Command
 
 		void		clearCommand();
 		void		parseCommand(std::string command);
-		std::string	deparseCommand();
 		std::string	getCommand();
 		std::string	getTag();
 		std::string	getMessage();
