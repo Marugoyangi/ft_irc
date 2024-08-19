@@ -26,12 +26,7 @@ class Command
 		std::string	getCommand() const;
 		std::string	getTag() const;
 		std::string	getMessage() const;
-<<<<<<< HEAD
-		
-		std::vector<std::string>	getParameter() const;
-=======
 		std::vector<std::string>	getParams() const;
->>>>>>> main
 
 		void	showCommand();
 };
