@@ -47,8 +47,9 @@ class Server
         std::string		_password;
         tm				*_time_local;
         int             _server_fd;
-        int                 _event_fd;
+        int             _event_fd;
         std::map<int, Client> _clients;
+        // std::map<std::string, Channel> _channels;
 
         // std::set<ClientCommand> _clients;
 
@@ -60,6 +61,8 @@ class Server
         Server(const Server &other);
         // Server setup
         void setupSocket();
+        std::map<int, Client> &getClients();
+        std::set<std::string> getNicknames();
 
         #ifdef __linux__
         void setupEpoll();

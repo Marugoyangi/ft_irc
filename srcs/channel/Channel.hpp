@@ -7,8 +7,9 @@
 class Channel
 {
 	private :
+		std::string _channel_name;
 		std::vector<int> _fdlist;
-	
+
 	public :
 		Channel();
 		~Channel();

@@ -1,6 +1,6 @@
 #include "CommandHandler.hpp"
 
-CommandHandler::CommandHandler()
+CommandHandler::CommandHandler(Client *client) : _client(client)
 {
 }
 
@@ -21,44 +21,25 @@ CommandHandler &CommandHandler::operator=(const CommandHandler &other)
 void CommandHandler::execute(Command &cmd, Client &client)
 {
     std::string command = cmd.getCommand();
+<<<<<<< HEAD
     std::string _message;
     std::vector<std::string> _tem;
 
     if (client.get_is_registered() == false)
+=======
+    _reply = "";
+    
+    if (client.getIs_registered() == false)
+>>>>>>> main
     {
         if (command == "PASS")
-            client.set_try_password(cmd.getMessage());
+            pass(cmd, client);
         else if (command == "NICK")
-        {
-            if (client.get_try_password() == client.get_password())
-            {
-                if (client.get_username() == "")
-                    client.set_username(cmd.getMessage());
-                else
-                    reply(client.get_socket_fd(), 433, "ERR_NICKNAMEINUSE");
-            }
-            else
-                reply(client.get_socket_fd(), 464, "ERR_PASSWDMISMATCH");
-        }
+            nick(cmd, client);
         else if (command == "USER")
-        {
-            if (client.get_try_password() == client.get_password())
-            {
-                if (client.get_username() == "")
-                    reply(client.get_socket_fd(), 451, "ERR_NOTREGISTERED");
-                else
-                {
-                    client.set_realname(cmd.getMessage());
-                    client.set_is_registered(true);
-                }
-            }
-            else
-                reply(client.get_socket_fd(), 464, "ERR_PASSWDMISMATCH");
-        }
+            user(cmd, client);
         else
-        {
-            reply(client.get_socket_fd(), 451, "ERR_NOTREGISTERED");
-        }
+            reply(451, "", "you are not registered");
     }
     else ///////////////////// when client is registered
     {
@@ -160,21 +141,82 @@ void CommandHandler::execute(Command &cmd, Client &client)
         }
     }
     client.showClient();
+    send(client.getSocket_fd(), _reply.c_str(), _reply.length(), 0);
 }
 
-void CommandHandler::reply(int fd, int numeric, std::string message)
+void CommandHandler::reply(int numeric, std::string param, std::string message)
 {
     std::string reply;
+    std::string head;
     std::string tail = ":" + message + "\r\n";
     std::stringstream ss;
     ss << numeric;
     if (numeric == 0)
-    {
-        reply = ":irc.local " + tail;
-    }
+        head = "";
     else
-    {
-        reply = ":irc.local " + ss.str() + " " + tail;
-    }
-    send(fd, reply.c_str(), reply.length(), 0);
+        head = ss.str();
+    reply = head + " " + param + " " + tail;
+    _reply += reply;
 }
+
+
+// all those commands
+
+void CommandHandler::pass(Command &cmd, Client &client)
+{
+    if (client.getIs_passed() == true)
+    {
+        reply(462, "", "You may not reregister");
+        return;
+    }
+    if (cmd.getParams().size() == 0)
+    {
+        reply(461, "PASS", "Not enough parameters");
+        return;
+    }
+    client.setTry_password(cmd.getParams()[0]);
+}
+
+void CommandHandler::nick(Command &cmd, Client &client)
+{
+    if (client.getIs_passed() == false)
+    {
+        if (client.getTry_password() == client.getPassword())
+            client.setIs_passed(true);
+        else
+        {
+            reply(464, "","Password incorrect");
+            return;
+        }
+    }
+    if (cmd.getParams().size() == 0)
+    {
+        reply(431, "", "No nickname given");
+        return;
+    }
+    if (cmd.getParams()[0].size() > 9 || cmd.getParams()[0].size() < 1 || 
+    cmd.getParams()[0].find_first_not_of(\
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789[]\\`_^{|}-") != std::string::npos)
+    {
+        reply(432, "", "Erroneous nickname");
+        return;
+    }
+    if (_client->getServer()->getNicknames().find(cmd.getParams()[0]) != \
+    _client->getServer()->getNicknames().end())
+    {
+        reply(433, cmd.getParams()[0], "Nickname is already in use"); // 이거 왜 지맘대로 있다고뜨나
+        return;
+    }
+    std::string str = cmd.getParams()[0];
+    std::transform(str.begin(), str.end(), str.begin(),
+                   static_cast<int(*)(int)>(std::tolower));
+    _client->setUsername(str);
+}
+
+void CommandHandler::user(Command &cmd, Client &client)
+{
+    (void) cmd;
+    (void) client;
+    // 어우 머리아퍼
+}
+
