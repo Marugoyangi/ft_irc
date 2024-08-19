@@ -149,3 +149,8 @@ void	Command::setCommand(std::string tag, std::string source, std::string comman
 	_source = source;
 	_parameter = parameter;
 }
+
+std::vector<std::string>	Command::getParams() const
+{
+	return (_parameter);
+}

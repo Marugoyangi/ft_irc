@@ -23,6 +23,23 @@ Server::Server(const Server &other)
 {
     *this = other;
 }
+
+std::map<int, Client> &Server::getClients()
+{
+    return _clients;
+}
+
+std::set<std::string> Server::getNicknames()
+{
+    std::set<std::string> nicknames;
+    std::map<int, Client>::iterator it;
+    for (it = _clients.begin(); it != _clients.end(); ++it)
+    {
+        nicknames.insert(it->second.getUsername());
+    }
+    return nicknames;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Member Functions ////////////////////////////////////////////////////////////
 void Server::setupSocket()
@@ -114,7 +131,7 @@ void Server::setupEpoll()
                 {
                     die("epoll_ctl: client");
                 }
-                Client new_client(client, _password);
+                Client new_client(client, _password, this);
                 _clients.insert(std::pair<int, Client>(client, new_client)); // 클라이언트 클래스 추가
             }
             else
