@@ -54,7 +54,44 @@ void CommandHandler::execute(Command &cmd, Client &client)
         }
         else if (command == "JOIN")
         {
-            // JOIN command
+			std::string	channel_name;
+			std::string	mode;
+			size_t		comma_pos;
+			size_t		mode_pos;
+
+            if (cmd.getParams().size() < 1)
+            {
+				reply(461, "JOIN", "Not enough parameters");
+                return;
+            }
+			while ((comma_pos = cmd.getParams()[1].find(',')) != std::string::npos)
+			{
+				if (comma_pos > 0)
+				{
+					channel_name = command.substr(0, comma_pos);
+					command.erase(0, comma_pos + 1);
+				}
+				if (cmd.getParams().size() > 1)
+				{
+					mode_pos = cmd.getParams()[2].find(',');
+					if (mode_pos > 0)
+					{
+						mode = command.substr(0, mode_pos);
+						command.erase(0, mode_pos + 1);
+					}
+				}
+				// 1. 채널 없으면 만들고 있으면 invite
+				// 2. ban 리스트에 nickname, username, hostname 있는지 비교
+				// 3. 비밀번호 확인?
+				 
+				_tem.push_back(param[0]);
+				_cmd.setCommand("", client.get_hostname(), "JOIN", _tem);
+				_message = _cmd.deparseCommand();
+				_message += com332(client, _cmd);
+				_message += com333(client, _cmd);
+				_message += com353(client, _cmd);
+				_message += com366(client, _cmd);
+			}
         }
         else if (command == "PART")
         {
