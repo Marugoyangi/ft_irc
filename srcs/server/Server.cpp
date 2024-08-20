@@ -304,7 +304,7 @@ void Server::setupKqueue()
                 {
                     die("kevent: client");
                 }
-                Client new_client(client, _password);
+                Client new_client(client, _password, this);
                 _clients.insert(std::pair<int, Client>(client, new_client)); // 클라이언트 클래스 추가
             }
             else // 클라이언트 소켓에서 이벤트 발생

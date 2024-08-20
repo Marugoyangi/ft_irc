@@ -251,7 +251,7 @@ void CommandHandler::user(Command &cmd, Client &client)
     }
     if (client.getNickname() == "") // Nickname not set
     {
-        reply(462, "", "You may not reregister");
+        reply(462, "", "You may not register");
         return;
     }
     // // 암호와 인자 유효한 경우엔 Ident 프로토콜 실행
