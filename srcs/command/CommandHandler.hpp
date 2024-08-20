@@ -22,6 +22,7 @@ class CommandHandler
         // all those commands
         void pass(Command &cmd, Client &client);
         void nick(Command &cmd, Client &client);
-        void user(Command &cmd, Client &client);    
+        void user(Command &cmd, Client &client);
+        void welcome(Client &client);    
 };
 #endif

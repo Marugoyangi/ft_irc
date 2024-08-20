@@ -57,6 +57,11 @@ void Client::setTry_password(std::string password)
     _try_password = password;
 }
 
+void Client::setNickname(std::string nickname)
+{
+    _nickname = nickname;
+}
+
 void Client::setUsername(std::string username)
 {
     _username = username;
@@ -110,6 +115,11 @@ void Client::setEstablished_time(time_t established_time)
 void Client::setLast_active_time(time_t last_active_time)
 {
     _last_active_time = last_active_time;
+}
+
+std::string Client::getNickname() const
+{
+    return _nickname;
 }
 
 std::string Client::getUsername() const
@@ -182,6 +192,7 @@ void Client::showClient()
     std::cout << "is_passed: " << _is_passed << std::endl;
     std::cout << "established_time: " << _established_time << std::endl;
     std::cout << "last_active_time: " << _last_active_time << std::endl;
+    std::cout << "nickname: " << _nickname << std::endl;
     std::cout << "username: " << _username << std::endl;
     std::cout << "hostname: " << _hostname << std::endl;
     std::cout << "realname: " << _realname << std::endl;

@@ -2,7 +2,7 @@
 
 // Orthodox Canonical Form ////////////////////////////////////////////////////
 Server::Server(std::string port, std::string password, tm *time_local) : \
-                _port(port), _password(password), _time_local(time_local) {}
+                _port(port), _password(password), _time_local(time_local), _server_name("ircserv") {}
 
 Server::~Server() {}
 
@@ -15,6 +15,7 @@ Server &Server::operator=(const Server &other)
         _server_fd = other._server_fd;
         _event_fd = other._event_fd;
         _clients = other._clients;
+        _server_name = other._server_name;
     }
     return *this;
 }
@@ -35,9 +36,26 @@ std::set<std::string> Server::getNicknames()
     std::map<int, Client>::iterator it;
     for (it = _clients.begin(); it != _clients.end(); ++it)
     {
-        nicknames.insert(it->second.getUsername());
+        if (it->second.getNickname() == "")
+            continue ;
+        nicknames.insert(it->second.getNickname());
     }
     return nicknames;
+}
+
+std::string Server::getPort()
+{
+    return _port;
+}
+
+std::string Server::getServerName()
+{
+    return _server_name;
+}
+
+time_t Server::getLocalTime()
+{
+    return mktime(_time_local);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -48,6 +48,7 @@ class Server
         tm				*_time_local;
         int             _server_fd;
         int             _event_fd;
+        std::string     _server_name;
         std::map<int, Client> _clients;
         // std::map<std::string, Channel> _channels;
 
@@ -61,8 +62,6 @@ class Server
         Server(const Server &other);
         // Server setup
         void setupSocket();
-        std::map<int, Client> &getClients();
-        std::set<std::string> getNicknames();
 
         #ifdef __linux__
         void setupEpoll();
@@ -72,6 +71,13 @@ class Server
         void setupKqueue();
         void stopKqueue();
         #endif
+        //getter and setter
+        std::map<int, Client> &getClients();
+        std::set<std::string> getNicknames();
+        std::string getPort();
+        std::string getServerName();
+        time_t getLocalTime();
+        
 };
 
 #endif

@@ -84,13 +84,13 @@ void CommandHandler::execute(Command &cmd, Client &client)
 				// 2. ban 리스트에 nickname, username, hostname 있는지 비교
 				// 3. 비밀번호 확인?
 				 
-				_tem.push_back(param[0]);
-				_cmd.setCommand("", client.get_hostname(), "JOIN", _tem);
-				_message = _cmd.deparseCommand();
-				_message += com332(client, _cmd);
-				_message += com333(client, _cmd);
-				_message += com353(client, _cmd);
-				_message += com366(client, _cmd);
+				// _tem.push_back(param[0]);
+				// _cmd.setCommand("", client.get_hostname(), "JOIN", _tem);
+				// _message = _cmd.deparseCommand();
+				// _message += com332(client, _cmd);
+				// _message += com333(client, _cmd);
+				// _message += com353(client, _cmd);
+				// _message += com366(client, _cmd);
 			}
         }
         else if (command == "PART")
@@ -219,22 +219,118 @@ void CommandHandler::nick(Command &cmd, Client &client)
         reply(432, "", "Erroneous nickname");
         return;
     }
-    if (_client->getServer()->getNicknames().find(cmd.getParams()[0]) != \
-    _client->getServer()->getNicknames().end())
+    std::string nickname = cmd.getParams()[0];
+    std::set<std::string> nicknames = client.getServer()->getNicknames();
+    if (nicknames.find(nickname) != nicknames.end())
     {
-        reply(433, cmd.getParams()[0], "Nickname is already in use"); // 이거 왜 지맘대로 있다고뜨나
+        reply(433, nickname, "Nickname is already in use");
         return;
     }
     std::string str = cmd.getParams()[0];
     std::transform(str.begin(), str.end(), str.begin(),
                    static_cast<int(*)(int)>(std::tolower));
-    _client->setUsername(str);
+    _client->setNickname(str);
 }
 
 void CommandHandler::user(Command &cmd, Client &client)
 {
-    (void) cmd;
-    (void) client;
-    // 어우 머리아퍼
+    if (client.getIs_passed() == false)
+    {
+        if (client.getTry_password() == client.getPassword())
+            client.setIs_passed(true);
+        else
+        {
+            reply(464, "","Password incorrect");
+            return;
+        }
+    }
+    if (cmd.getParams().size() < 4)
+    {
+        reply(461, "USER", "Not enough parameters");
+        return;
+    }
+    if (client.getNickname() == "") // Nickname not set
+    {
+        reply(462, "", "You may not reregister");
+        return;
+    }
+    // 암호와 인자 유효한 경우엔 Ident 프로토콜 실행
+    std::string identified_user = "";
+    std::string ident_server = "";
+
+    ident_server = client.getServer()->getPort() + ",113\r\n";
+    ssize_t sent = send(client.getSocket_fd(), ident_server.c_str(), ident_server.length(), 0);
+    if (sent == -1)
+    {
+        die("send");
+        return;
+    }
+    time_t start = time(NULL);
+    while(1)
+    {
+        if (time(NULL) - start > 10)
+            break ;
+        char buffer[BUFFER_SIZE];
+        ssize_t received = recv(client.getSocket_fd(), buffer, BUFFER_SIZE, 0);
+        if (received == -1)
+        {
+            die("recv");
+            return;
+        }
+        if (received == 0)
+            break;
+        std::string message(buffer, received);
+        std::string::size_type pos = message.find("USERID");
+        if (pos != std::string::npos)
+        {
+            identified_user = message.substr(pos + 7, message.find(" ", pos + 7) - pos - 7);
+            break;
+        }
+    }
+    if (identified_user == "") // debug
+        printf("Debug: Ident_serv: No USERID received\n");
+    if (cmd.getParams()[0].size() > 9 || cmd.getParams()[0].size() < 1 ||
+    cmd.getParams()[3].size() > 50)
+    {
+        reply(461, "USER", "Not enough parameters");
+        return;
+    }
+    if (cmd.getParams()[2] != "*")
+        client.setHostname(cmd.getParams()[2]); // debug purpose
+    std::string str = "~" + cmd.getParams()[0]; // tilde means custom ident
+    if (identified_user != "")
+        str = identified_user;
+    std::transform(str.begin(), str.end(), str.begin(),
+                   static_cast<int(*)(int)>(std::tolower));
+    _client->setUsername(str);
+    str = cmd.getParams()[3];
+    std::transform(str.begin(), str.end(), str.begin(),
+                   static_cast<int(*)(int)>(std::tolower));
+    _client->setRealname(str);
+    // ping-pong should be turned off until the user is registered
+    welcome(client);
 }
 
+void CommandHandler::welcome(Client &client)
+{
+    std::string server_name = client.getServer()->getServerName();
+    reply(001, "", "Welcome to the " + server_name + " Network, " + client.getNickname() + \
+    "!" + client.getUsername() + "@" + client.getHostname());
+    reply(002, "", "Your host is " + server_name + ", running version " + "ircserv 1.0");
+    reply(003, "", "This server was created " + client.getServer()->getLocalTime());
+    reply(004, server_name + " ircserv 1.0 abhi bhi", "ao");
+    std::string modes =
+        "CASEMAPPING=rfc1459 CHARSET=ascii NICKLEN=9 CHANNELLEN=50 TOPICLEN=390 "
+        "CHANTYPES=#& PREFIX=(ov)@+ MAXLIST=bqeI:100 MODES=4 NETWORK=" + server_name;
+    reply(005, "", modes);
+    reply(251, "", "There are 1 users and 0 services on 1 servers");
+    reply(252, "", "0 :operator(s) online");
+    reply(253, "", "0 :unknown connection(s)");
+    reply(254, "", "0 :channels formed");
+    reply(255, "", "I have 1 clients and 0 servers");
+    reply(265, "", "0 1 :Current local users 0, max 1");
+    reply(266, "", "1 1 :Current global users 1, max 1");
+    reply(375, "", ":- " + server_name + " Message of the Day - ");
+    reply(372, "", ":- Welcome to the " + server_name + " IRC Network");
+    reply(376, "", "End of /MOTD command");
+}

@@ -14,6 +14,7 @@ class Client
 		bool		_is_passed;
 		time_t		_established_time;
 		time_t		_last_active_time;
+		std::string _nickname;
 		std::string	_username;
 		std::string _realname;
 		std::string _hostname;
@@ -33,6 +34,7 @@ class Client
 
 		/// Setters and Getters
 		void	setTry_password(std::string password);
+		void	setNickname(std::string nickname);
 		void  	setUsername(std::string username);
 		void  	setRealname(std::string realname);
 		void  	setHostname(std::string hostname);
@@ -44,6 +46,7 @@ class Client
 		void	setIs_passed(bool is_passed);
 		void	setEstablished_time(time_t established_time);
 		void	setLast_active_time(time_t last_active_time);
+		std::string	getNickname() const;
 		std::string	getUsername() const;
 		std::string	getRealname() const;
 		std::string	getHostname() const;
