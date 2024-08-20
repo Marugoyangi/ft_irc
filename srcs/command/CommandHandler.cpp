@@ -254,41 +254,41 @@ void CommandHandler::user(Command &cmd, Client &client)
         reply(462, "", "You may not reregister");
         return;
     }
-    // 암호와 인자 유효한 경우엔 Ident 프로토콜 실행
-    std::string identified_user = "";
-    std::string ident_server = "";
+    // // 암호와 인자 유효한 경우엔 Ident 프로토콜 실행
+    // std::string identified_user = "";
+    // std::string ident_server = "";
 
-    ident_server = client.getServer()->getPort() + ",113\r\n";
-    ssize_t sent = send(client.getSocket_fd(), ident_server.c_str(), ident_server.length(), 0);
-    if (sent == -1)
-    {
-        die("send");
-        return;
-    }
-    time_t start = time(NULL);
-    while(1)
-    {
-        if (time(NULL) - start > 10)
-            break ;
-        char buffer[BUFFER_SIZE];
-        ssize_t received = recv(client.getSocket_fd(), buffer, BUFFER_SIZE, 0);
-        if (received == -1)
-        {
-            die("recv");
-            return;
-        }
-        if (received == 0)
-            break;
-        std::string message(buffer, received);
-        std::string::size_type pos = message.find("USERID");
-        if (pos != std::string::npos)
-        {
-            identified_user = message.substr(pos + 7, message.find(" ", pos + 7) - pos - 7);
-            break;
-        }
-    }
-    if (identified_user == "") // debug
-        printf("Debug: Ident_serv: No USERID received\n");
+    // ident_server = client.getServer()->getPort() + ",113\r\n";
+    // ssize_t sent = send(client.getSocket_fd(), ident_server.c_str(), ident_server.length(), 0);
+    // if (sent == -1)
+    // {
+    //     die("send");
+    //     return;
+    // }
+    // time_t start = time(NULL);
+    // while(1)
+    // {
+    //     if (time(NULL) - start > 10)
+    //         break ;
+    //     char buffer[BUFFER_SIZE];
+    //     ssize_t received = recv(client.getSocket_fd(), buffer, BUFFER_SIZE, 0);
+    //     if (received == -1)
+    //     {
+    //         die("recv");
+    //         return;
+    //     }
+    //     if (received == 0)
+    //         break;
+    //     std::string message(buffer, received);
+    //     std::string::size_type pos = message.find("USERID");
+    //     if (pos != std::string::npos)
+    //     {
+    //         identified_user = message.substr(pos + 7, message.find(" ", pos + 7) - pos - 7);
+    //         break;
+    //     }
+    // }
+    // if (identified_user == "") // debug
+    //     printf("Debug: Ident_serv: No USERID received\n");
     if (cmd.getParams()[0].size() > 9 || cmd.getParams()[0].size() < 1 ||
     cmd.getParams()[3].size() > 50)
     {
@@ -298,8 +298,8 @@ void CommandHandler::user(Command &cmd, Client &client)
     if (cmd.getParams()[2] != "*")
         client.setHostname(cmd.getParams()[2]); // debug purpose
     std::string str = "~" + cmd.getParams()[0]; // tilde means custom ident
-    if (identified_user != "")
-        str = identified_user;
+    // if (identified_user != "")
+    //     str = identified_user;
     std::transform(str.begin(), str.end(), str.begin(),
                    static_cast<int(*)(int)>(std::tolower));
     _client->setUsername(str);
@@ -309,6 +309,7 @@ void CommandHandler::user(Command &cmd, Client &client)
     _client->setRealname(str);
     // ping-pong should be turned off until the user is registered
     welcome(client);
+    client.setIs_registered(true);
 }
 
 void CommandHandler::welcome(Client &client)
@@ -317,7 +318,7 @@ void CommandHandler::welcome(Client &client)
     reply(001, "", "Welcome to the " + server_name + " Network, " + client.getNickname() + \
     "!" + client.getUsername() + "@" + client.getHostname());
     reply(002, "", "Your host is " + server_name + ", running version " + "ircserv 1.0");
-    reply(003, "", "This server was created " + client.getServer()->getLocalTime());
+    reply(003, "", "This server was created sometime"); // need fix
     reply(004, server_name + " ircserv 1.0 abhi bhi", "ao");
     std::string modes =
         "CASEMAPPING=rfc1459 CHARSET=ascii NICKLEN=9 CHANNELLEN=50 TOPICLEN=390 "
