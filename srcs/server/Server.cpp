@@ -16,6 +16,7 @@ Server &Server::operator=(const Server &other)
         _event_fd = other._event_fd;
         _clients = other._clients;
         _server_name = other._server_name;
+		_channels = other._channels;
     }
     return *this;
 }
@@ -358,7 +359,7 @@ void Server::setupKqueue()
                         cmd.clearCommand();
                         cmd.parseCommand(message);
                         cmd.showCommand();
-                        tmp_client.execCommand(cmd);
+                        tmp_client.execCommand(cmd, _channels);
                         // ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
                         // printf("Sent %ld bytes\n", sent_bytes);
                         // if (sent_bytes < 0)

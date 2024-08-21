@@ -1,8 +1,10 @@
+#pragma once
 #ifndef CHANNEL_HPP
 # define CHANNEL_HPP
 
 # include <vector>
 # include <iostream>
+# include "../client/client.hpp"
 
 class Channel
 {
@@ -15,6 +17,8 @@ class Channel
 		~Channel();
 		Channel &operator=(const Channel &other);
 		Channel(const Channel &other);
+
+		int	addClientToChannel(Client client);
 };
 
 #endif

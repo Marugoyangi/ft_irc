@@ -30,7 +30,7 @@ class Client
 		~Client();
 		Client(const Client &other);
 		Client &operator=(const Client &other);	
-		void	execCommand(Command &cmd);
+		void	execCommand(Command &cmd, std::map<std::string, Channel> &channels);
 
 		/// Setters and Getters
 		void	setTry_password(std::string password);

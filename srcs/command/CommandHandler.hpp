@@ -16,13 +16,15 @@ class CommandHandler
         CommandHandler(const CommandHandler &other);
         CommandHandler &operator=(const CommandHandler &other);
 
-        void execute(Command &cmd, Client &client);
+        void execute(Command &cmd, Client &client, std::map<std::string, Channel> channels);
         void reply(int numeric, std::string param, std::string message);
 
         // all those commands
         void pass(Command &cmd, Client &client);
         void nick(Command &cmd, Client &client);
         void user(Command &cmd, Client &client);
-        void welcome(Client &client);    
+        void welcome(Client &client);
+
+		void	join(Command &cmd, Client &client, std::map<std::string, Channel> &channels);
 };
 #endif

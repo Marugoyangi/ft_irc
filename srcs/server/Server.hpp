@@ -23,6 +23,7 @@
 # include "../command/Command.hpp"
 # include "../command/CommandHandler.hpp"
 # include "../client/Client.hpp"
+# include "../channel/Channel.hpp"
 
 # ifdef __APPLE__
 #  include <sys/event.h>
@@ -50,7 +51,7 @@ class Server
         int             _event_fd;
         std::string     _server_name;
         std::map<int, Client> _clients;
-        // std::map<std::string, Channel> _channels;
+        std::map<std::string, Channel> _channels;
 
         // std::set<ClientCommand> _clients;
 

@@ -21,3 +21,14 @@ Channel &Channel::operator=(const Channel &other)
 ////////////////////////////////////////////////////////////////
 ///OCCF //////////////////////////////////////
 
+int	Channel::addClientToChannel(Client client)
+{
+	for (int i=0; i < _fdlist.size() ; i++)
+	{
+		if (_fdlist[i] == client.getSocket_fd())
+			return (-1);
+	}
+	_fdlist.push_back(client.getSocket_fd());
+	return (0);
+}
+
