@@ -2,6 +2,7 @@
 # define CLIENT_HPP
 
 # include "../server/Server.hpp"
+# include "../channel/Channel.hpp"
 
 class CommandHandler;
 class Command;

@@ -13,27 +13,32 @@ void	CommandHandler::join(Command &cmd, Client &client, std::map<std::string, Ch
 		reply(461, "JOIN", "Not enough parameters");
 		return;
 	}
-	while ((comma_pos = cmd.getParams()[1].find(',')) != std::string::npos)
+	while ((comma_pos = cmd.getParams()[0].find(',')) != std::string::npos)
 	{
 		if (comma_pos > 0)
 		{
 			channel_name = cmd.getParams()[0].substr(0, comma_pos);
-			cmd.getParams()[0].erase(0, comma_pos + 1);
+			cmd.getParams()[0].erase(1, comma_pos + 1);
 		}
 		if (cmd.getParams().size() > 1)
 		{
-			mode_pos = cmd.getParams()[2].find(',');
+			mode_pos = cmd.getParams()[1].find(',');
 			if (mode_pos > 0)
 			{
 				mode = cmd.getParams()[1].substr(0, mode_pos);
 				cmd.getParams()[1].erase(0, mode_pos + 1);
 			}
 		}
-		std::map<std::string, Channel>::iterator it = channels.find(channel_name);
-		if (channels.find(channel_name) == channels.end())
-			channels[channel_name] = *(new Channel);
+		// std::map<std::string, Channel>::iterator it = channels.find(channel_name);
+		if (channels.find(channel_name) != channels.end())
+		{
+			if (channels[channel_name].addClientToChannel(client) == -1)
+				continue;
+		}
+		channels[channel_name] = *(new Channel(channel_name));
 		if (channels[channel_name].addClientToChannel(client) == -1)
 			continue;
+
 		// 1. ban 리스트에 nickname, username, hostname 있는지 비교
 		// 2. 비밀번호 확인?
 		
@@ -45,6 +50,23 @@ void	CommandHandler::join(Command &cmd, Client &client, std::map<std::string, Ch
 		// _message += com353(client, _cmd);
 		// _message += com366(client, _cmd);
 	}
+	if (cmd.getParams()[0] != "")
+		channel_name = cmd.getParams()[0];
+	if (cmd.getParams()[1] != "")
+		mode = cmd.getParams()[1];
+	std::cout << "\033[01m\033[33mchannel name: " << channel_name << "\033[0m" << std::endl;
+	if (channels.find(channel_name) != channels.end())
+	{
+		std::cout << "channel exist" << std::endl;
+		if (channels[channel_name].addClientToChannel(client) == -1)
+			return ;  // 채널에 클라이언트 추가 실패 에러 처리 필요
+		return ;
+	}
+	std::cout << "\t\t new Channel created" << std::endl;
+	channels[channel_name] = *(new Channel(channel_name));
+	if (channels[channel_name].addClientToChannel(client) == -1)
+		return ;  // 채널에 클라이언트 추가 실패 에러 처리 필요
+	return;
 }
 
 std::string	com461(Client const &client, Command const &cmd)
@@ -52,25 +74,25 @@ std::string	com461(Client const &client, Command const &cmd)
 	Command _cmd;
 	std::vector<std::string> _tem;
 
-	_tem.push_back(client.get_username());
+	_tem.push_back(client.getUsername());
 	_tem.push_back(cmd.getCommand());
 	_tem.push_back("Not enough parameters");
-	_cmd.setCommand("", client.get_username(), "461", _tem);
+	_cmd.setCommand("", client.getUsername(), "461", _tem);
 	return (_cmd.deparseCommand());
 }
 
-std::string	com332(Client const &client, Command const &cmd)
-{
-}
+// std::string	com332(Client const &client, Command const &cmd)
+// {
+// }
 
-std::string	com333(Client const &client, Command const &cmd)
-{
-}
+// std::string	com333(Client const &client, Command const &cmd)
+// {
+// }
 
-std::string	com353(Client const &client, Command const &cmd)
-{
-}
+// std::string	com353(Client const &client, Command const &cmd)
+// {
+// }
 
-std::string	com366(Client const &client, Command const &cmd)
-{
-}
+// std::string	com366(Client const &client, Command const &cmd)
+// {
+// }

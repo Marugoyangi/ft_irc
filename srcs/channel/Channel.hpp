@@ -4,7 +4,9 @@
 
 # include <vector>
 # include <iostream>
-# include "../client/client.hpp"
+
+class Server;
+class Client;
 
 class Channel
 {
@@ -18,7 +20,12 @@ class Channel
 		Channel &operator=(const Channel &other);
 		Channel(const Channel &other);
 
-		int	addClientToChannel(Client client);
+		Channel(std::string myname);
+		int		addClientToChannel(Client client);
+		void	showChannelMembers(Server &server);
 };
+
+# include "../server/Server.hpp"
+# include "../client/Client.hpp"
 
 #endif

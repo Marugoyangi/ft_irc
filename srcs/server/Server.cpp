@@ -360,6 +360,12 @@ void Server::setupKqueue()
                         cmd.parseCommand(message);
                         cmd.showCommand();
                         tmp_client.execCommand(cmd, _channels);
+
+						for(std::map<std::string, Channel>::iterator iter = _channels.begin() ; iter != _channels.end(); iter++)
+						{
+							std::cout << "\033[01m\033[33m reach here\033[0m" << std::endl;
+							iter->second.showChannelMembers(*this);
+						}
                         // ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
                         // printf("Sent %ld bytes\n", sent_bytes);
                         // if (sent_bytes < 0)

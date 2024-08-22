@@ -18,7 +18,7 @@ CommandHandler &CommandHandler::operator=(const CommandHandler &other)
     return (*this);
 }
 
-void CommandHandler::execute(Command &cmd, Client &client, std::map<std::string, Channel> channels)
+void CommandHandler::execute(Command &cmd, Client &client, std::map<std::string, Channel> &channels)
 {
     std::string command = cmd.getCommand();
     _reply = "";
@@ -54,7 +54,7 @@ void CommandHandler::execute(Command &cmd, Client &client, std::map<std::string,
         }
         else if (command == "JOIN")
         {
-			// JOIN command
+			join(cmd, client, channels);
         }
         else if (command == "PART")
         {
@@ -122,6 +122,7 @@ void CommandHandler::execute(Command &cmd, Client &client, std::map<std::string,
         }
     }
     client.showClient();
+	std::cout << "message to cline: " << _reply << std::endl;
     send(client.getSocket_fd(), _reply.c_str(), _reply.length(), 0);
 }
 
@@ -162,7 +163,7 @@ void CommandHandler::nick(Command &cmd, Client &client)
 {
     if (client.getIs_passed() == false)
     {
-        if (client.getTry_password() == client.getPassword())
+        if (1 || client.getTry_password() == client.getPassword())
             client.setIs_passed(true);
         else
         {
@@ -199,7 +200,7 @@ void CommandHandler::user(Command &cmd, Client &client)
 {
     if (client.getIs_passed() == false)
     {
-        if (client.getTry_password() == client.getPassword())
+        if (1 || client.getTry_password() == client.getPassword())
             client.setIs_passed(true);
         else
         {
@@ -252,7 +253,7 @@ void CommandHandler::user(Command &cmd, Client &client)
     // }
     // if (identified_user == "") // debug
     //     printf("Debug: Ident_serv: No USERID received\n");
-    if (cmd.getParams()[0].size() > 9 || cmd.getParams()[0].size() < 1 ||
+    if (cmd.getParams()[0].size() > 19 || cmd.getParams()[0].size() < 1 ||
     cmd.getParams()[3].size() > 50)
     {
         reply(461, "USER", "Not enough parameters");

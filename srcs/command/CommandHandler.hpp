@@ -4,6 +4,7 @@
 # include "../server/Server.hpp"
 # include "../client/Client.hpp"
 # include "../command/Command.hpp"
+# include "../channel/Channel.hpp"
 
 class CommandHandler
 {
@@ -16,7 +17,7 @@ class CommandHandler
         CommandHandler(const CommandHandler &other);
         CommandHandler &operator=(const CommandHandler &other);
 
-        void execute(Command &cmd, Client &client, std::map<std::string, Channel> channels);
+        void execute(Command &cmd, Client &client, std::map<std::string, Channel> &channels);
         void reply(int numeric, std::string param, std::string message);
 
         // all those commands
