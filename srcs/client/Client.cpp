@@ -44,10 +44,10 @@ Client::Client(int fd, std::string password, Server *server)
     _socket_fd = fd;
 }
 
-void Client::execCommand(Command &cmd, std::map<std::string, Channel> &channels)
+void Client::execCommand(Command &cmd, Server &server)
 {
     CommandHandler handler(this);
-    handler.execute(cmd, *this, channels);
+    handler.execute(cmd, *this, server);
 }
 
 //////setters and getters

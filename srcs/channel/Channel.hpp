@@ -21,8 +21,15 @@ class Channel
 		Channel(const Channel &other);
 
 		Channel(std::string myname);
-		int		addClientToChannel(Client client);
-		void	showChannelMembers(Server &server);
+		
+		std::string	getChannelName() const;
+		std::string	getChannelMembers(Server &server) const;
+		bool		isMember(int fd);
+		int			addClient(Client client);
+		void		removeClient(int fd);
+		void		messageToMembers(Client const &client, std::string cmd, std::string message);
+
+		void		showChannelMembers(Server &server);
 };
 
 # include "../server/Server.hpp"

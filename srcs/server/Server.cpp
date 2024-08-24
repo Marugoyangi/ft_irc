@@ -31,6 +31,11 @@ std::map<int, Client> &Server::getClients()
     return _clients;
 }
 
+std::map<std::string, Channel> &Server::getChannels()
+{
+    return _channels;
+}
+
 std::set<std::string> Server::getNicknames()
 {
     std::set<std::string> nicknames;
@@ -359,11 +364,10 @@ void Server::setupKqueue()
                         cmd.clearCommand();
                         cmd.parseCommand(message);
                         cmd.showCommand();
-                        tmp_client.execCommand(cmd, _channels);
+                        tmp_client.execCommand(cmd, *this);
 
 						for(std::map<std::string, Channel>::iterator iter = _channels.begin() ; iter != _channels.end(); iter++)
 						{
-							std::cout << "\033[01m\033[33m reach here\033[0m" << std::endl;
 							iter->second.showChannelMembers(*this);
 						}
                         // ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
@@ -399,4 +403,5 @@ void Server::stopKqueue()
     }
     close(_event_fd);
 }
+
 #endif

@@ -18,7 +18,7 @@ CommandHandler &CommandHandler::operator=(const CommandHandler &other)
     return (*this);
 }
 
-void CommandHandler::execute(Command &cmd, Client &client, std::map<std::string, Channel> &channels)
+void CommandHandler::execute(Command &cmd, Client &client, Server &server)
 {
     std::string command = cmd.getCommand();
     _reply = "";
@@ -54,11 +54,11 @@ void CommandHandler::execute(Command &cmd, Client &client, std::map<std::string,
         }
         else if (command == "JOIN")
         {
-			join(cmd, client, channels);
+			join(cmd, client, server);
         }
         else if (command == "PART")
         {
-            // PART command
+            part(cmd, client, server.getChannels());
         }
         else if (command == "MODE")
         {
@@ -122,7 +122,7 @@ void CommandHandler::execute(Command &cmd, Client &client, std::map<std::string,
         }
     }
     client.showClient();
-	std::cout << "message to cline: " << _reply << std::endl;
+	std::cout << "\033[01m\033[33mmessage to client: " << _reply << "\033[0m" << std::endl;
     send(client.getSocket_fd(), _reply.c_str(), _reply.length(), 0);
 }
 
@@ -261,7 +261,8 @@ void CommandHandler::user(Command &cmd, Client &client)
     }
     if (cmd.getParams()[2] != "*")
         client.setHostname(cmd.getParams()[2]); // debug purpose
-    std::string str = "~" + cmd.getParams()[0]; // tilde means custom ident
+    std::string str = cmd.getParams()[0]; // tilde means custom ident
+    //std::string str = "~" + cmd.getParams()[0]; // tilde means custom ident
     // if (identified_user != "")
     //     str = identified_user;
     std::transform(str.begin(), str.end(), str.begin(),
@@ -279,8 +280,9 @@ void CommandHandler::user(Command &cmd, Client &client)
 void CommandHandler::welcome(Client &client)
 {
     std::string server_name = client.getServer()->getServerName();
-    reply(001, "", "Welcome to the " + server_name + " Network, " + client.getNickname() + \
-    "!" + client.getUsername() + "@" + client.getHostname());
+    _reply = ":irc.local 001 " + client.getNickname() + " :Welcome to the " + server_name + " Network, " + client.getNickname() + "!" + client.getUsername() + "@" + client.getHostname() + "\r\n";
+    // reply(001, "", "Welcome to the " + server_name + " Network, " + client.getNickname()
+    // "!" + client.getUsername() + "@" + client.getHostname());
     reply(002, "", "Your host is " + server_name + ", running version " + "ircserv 1.0");
     reply(003, "", "This server was created sometime"); // need fix
     reply(004, server_name + " ircserv 1.0 abhi bhi", "ao");
