@@ -66,11 +66,11 @@ void CommandHandler::execute(Command &cmd, Client &client, Server &server)
         }
         else if (command == "TOPIC")
         {
-            // TOPIC command
+            topic(cmd, client, server);
         }
         else if (command == "NAMES")
         {
-            // NAMES command
+            names(cmd, client, server);
         }
         else if (command == "LIST")
         {
@@ -121,8 +121,8 @@ void CommandHandler::execute(Command &cmd, Client &client, Server &server)
             // ERR_UNKNOWNCOMMAND
         }
     }
-    client.showClient();
-	std::cout << "\033[01m\033[33mmessage to client: " << _reply << "\033[0m" << std::endl;
+    // client.showClient();
+	std::cout << "\033[01m\033[33mmessage to client " << client.getSocket_fd() << ": "  << _reply << "\033[0m" << std::endl;
     send(client.getSocket_fd(), _reply.c_str(), _reply.length(), 0);
 }
 
@@ -139,6 +139,24 @@ void CommandHandler::reply(int numeric, std::string param, std::string message)
         head = ss.str();
     reply = head + " " + param + " " + tail;
     _reply += reply;
+}
+
+void CommandHandler::reply(std::string const &command, std::string const &message)
+{
+    _reply += ":irc.local " + command + " :" + message + "\r\n";
+}
+
+void CommandHandler::reply(std::string const &command, std::vector<std::string> const &message)
+{
+    _reply += ":irc.local " + command;
+    for (size_t i = 0; i < message.size(); i++)
+    {
+        _reply += " ";
+        if (i == message.size() - 1)
+            _reply += ":";
+        _reply += message[i];
+    }
+    _reply += "\r\n";
 }
 
 
@@ -163,7 +181,7 @@ void CommandHandler::nick(Command &cmd, Client &client)
 {
     if (client.getIs_passed() == false)
     {
-        if (1 || client.getTry_password() == client.getPassword())
+        if (client.getTry_password() == client.getPassword())
             client.setIs_passed(true);
         else
         {
@@ -198,16 +216,18 @@ void CommandHandler::nick(Command &cmd, Client &client)
 
 void CommandHandler::user(Command &cmd, Client &client)
 {
-    if (client.getIs_passed() == false)
-    {
-        if (1 || client.getTry_password() == client.getPassword())
-            client.setIs_passed(true);
-        else
-        {
-            reply(464, "","Password incorrect");
-            return;
-        }
-    }
+    // if (client.getIs_passed() == false)
+    // {
+    //     if (client.getTry_password() == client.getPassword())
+    //         client.setIs_passed(true);
+    //     else
+    //     {
+    //         reply(464, "","Password incorrect");
+    //         return;
+    //     }
+    // }
+    client.setIs_passed(true);
+
     if (cmd.getParams().size() < 4)
     {
         reply(461, "USER", "Not enough parameters");
@@ -215,7 +235,7 @@ void CommandHandler::user(Command &cmd, Client &client)
     }
     if (client.getNickname() == "") // Nickname not set
     {
-        reply(462, "", "You may not register");
+        reply(462, "", "You may not reregister");
         return;
     }
     // // 암호와 인자 유효한 경우엔 Ident 프로토콜 실행
@@ -253,7 +273,7 @@ void CommandHandler::user(Command &cmd, Client &client)
     // }
     // if (identified_user == "") // debug
     //     printf("Debug: Ident_serv: No USERID received\n");
-    if (cmd.getParams()[0].size() > 19 || cmd.getParams()[0].size() < 1 ||
+    if (cmd.getParams()[0].size() > 9 || cmd.getParams()[0].size() < 1 ||
     cmd.getParams()[3].size() > 50)
     {
         reply(461, "USER", "Not enough parameters");
@@ -261,8 +281,7 @@ void CommandHandler::user(Command &cmd, Client &client)
     }
     if (cmd.getParams()[2] != "*")
         client.setHostname(cmd.getParams()[2]); // debug purpose
-    std::string str = cmd.getParams()[0]; // tilde means custom ident
-    //std::string str = "~" + cmd.getParams()[0]; // tilde means custom ident
+    std::string str = "~" + cmd.getParams()[0]; // tilde means custom ident
     // if (identified_user != "")
     //     str = identified_user;
     std::transform(str.begin(), str.end(), str.begin(),
@@ -280,9 +299,8 @@ void CommandHandler::user(Command &cmd, Client &client)
 void CommandHandler::welcome(Client &client)
 {
     std::string server_name = client.getServer()->getServerName();
-    _reply = ":irc.local 001 " + client.getNickname() + " :Welcome to the " + server_name + " Network, " + client.getNickname() + "!" + client.getUsername() + "@" + client.getHostname() + "\r\n";
-    // reply(001, "", "Welcome to the " + server_name + " Network, " + client.getNickname()
-    // "!" + client.getUsername() + "@" + client.getHostname());
+    com001(client, server_name);
+    // reply(001, "", "Welcome to the " + server_name + " Network, " + client.getNickname() + "!" + client.getUsername() + "@" + client.getHostname());
     reply(002, "", "Your host is " + server_name + ", running version " + "ircserv 1.0");
     reply(003, "", "This server was created sometime"); // need fix
     reply(004, server_name + " ircserv 1.0 abhi bhi", "ao");
@@ -301,3 +319,4 @@ void CommandHandler::welcome(Client &client)
     reply(372, "", ":- Welcome to the " + server_name + " IRC Network");
     reply(376, "", "End of /MOTD command");
 }
+

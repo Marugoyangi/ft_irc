@@ -18,7 +18,10 @@ class CommandHandler
         CommandHandler &operator=(const CommandHandler &other);
 
         void execute(Command &cmd, Client &client, Server &server);
+
         void reply(int numeric, std::string param, std::string message);
+        void reply(std::string const &command, std::vector<std::string> const &message);
+        void reply(std::string const &command, std::string const &message);
 
         // all those commands
         void pass(Command &cmd, Client &client);
@@ -28,7 +31,13 @@ class CommandHandler
 
 		void	join(Command &cmd, Client &client, Server &server);
         void    part(Command &cmd, Client &client, std::map<std::string, Channel> &channels);
-        std::string com461(Client const &client, Command const &cmd);
-        std::string com353(Server &server, Channel const &channels);
+        void	names(Command const &cmd, Client const &client, Server &server);
+        void    topic(Command const &cmd, Client const &client, Server &server);
+
+        void    com001(Client const &client, std::string const &server_name);               //RPL_WELCOME 
+        void    com461(std::string const &nickname, std::string const &cmd);                //ERR_NEEDMOREPARAMS
+        void    com353(Server &server, Channel const &channels);                            //RPL_NAMREPLY
+        void    com366(Client const &client, std::string const &channel_name);              //RPL_ENDOFNAMES
+        void    com332(Client const &client, Channel const &channel);   //RPL_TOPIC
 };
 #endif

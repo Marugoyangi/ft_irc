@@ -50,6 +50,12 @@ void Client::execCommand(Command &cmd, Server &server)
     handler.execute(cmd, *this, server);
 }
 
+std::string	Client::getSource() const
+{
+	std::string source = ":" + _nickname + "!" + _username + "@" + _hostname;
+	return (source);
+}
+
 //////setters and getters
 
 void Client::setTry_password(std::string password)

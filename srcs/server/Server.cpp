@@ -363,7 +363,7 @@ void Server::setupKqueue()
                         ///////////////////////////////////////////////////////
                         cmd.clearCommand();
                         cmd.parseCommand(message);
-                        cmd.showCommand();
+                        // cmd.showCommand();
                         tmp_client.execCommand(cmd, *this);
 
 						for(std::map<std::string, Channel>::iterator iter = _channels.begin() ; iter != _channels.end(); iter++)

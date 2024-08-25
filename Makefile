@@ -1,11 +1,15 @@
 NAME = ircserv
 SRCS = ./srcs/main.cpp\
        ./srcs/server/Server.cpp\
-	   ./srcs/command/Command.cpp\
 	   ./srcs/client/Client.cpp\
-	   ./srcs/command/CommandHandler.cpp\
 	   ./srcs/channel/Channel.cpp\
-	   ./srcs/command/comJoin.cpp
+	   ./srcs/command/Command.cpp\
+	   ./srcs/command/CommandHandler.cpp\
+	   ./srcs/command/comNumberic.cpp\
+	   ./srcs/command/comPart.cpp\
+	   ./srcs/command/comNames.cpp\
+	   ./srcs/command/comJoin.cpp\
+	   ./srcs/command/comTopic.cpp
 OBJS = $(SRCS:.cpp=.o)
 C++ = c++
 FLAGS = -Wall -Wextra -Werror -std=c++98 -I. -g3
