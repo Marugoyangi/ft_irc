@@ -50,10 +50,37 @@ void CommandHandler::privmsg(Command const &cmd, Client const &client, Server &s
             }
         }
         else if (target[0] == '#' || target[0] == '$')
-        {
-            // 호스트 마스크나 서버 마스크에 대한 추가 처리 필요
-            // TODO: Implement host mask and server mask handling
-        }
+		{
+			// 호스트 마스크나 서버 마스크에 대한 처리
+			std::map<int, Client> &clients = server.getClients();
+			bool mask_found = false;
+
+			for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it)
+			{
+				Client &recipient = it->second;
+				
+				// 호스트 마스크 처리: 서버에 연결된 클라이언트의 호스트명이 마스크와 일치하는지 확인
+				if (target[0] == '$' && recipient.getHostname().find(target.substr(1)) != std::string::npos)
+				{
+					mask_found = true;
+					std::string full_msg = ":" + client.getNickname() + " PRIVMSG " + target + " :" + message + "\r\n";
+					send(recipient.getSocket_fd(), full_msg.c_str(), full_msg.length(), 0);
+				}
+				
+				// 서버 마스크 처리: 서버에 연결된 클라이언트의 서버명이 마스크와 일치하는지 확인
+				if (target[0] == '#' && recipient.getServer()->getServerName().find(target.substr(1)) != std::string::npos)
+				{
+					mask_found = true;
+					std::string full_msg = ":" + client.getNickname() + " PRIVMSG " + target + " :" + message + "\r\n";
+					send(recipient.getSocket_fd(), full_msg.c_str(), full_msg.length(), 0);
+				}
+			}
+			if (!mask_found)
+			{
+				// ERR_NOSUCHNICK: 호스트 마스크 또는 서버 마스크가 일치하는 클라이언트를 찾지 못했을 때
+				_reply += ":localhost 401 " + client.getNickname() + " " + target + " :No such nick/channel\r\n";
+			}
+		}
         else
         {
             // 개인 메시지 처리
