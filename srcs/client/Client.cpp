@@ -1,13 +1,10 @@
 #include "Client.hpp"
 
-Client::Client()
-{
-}
-
 Client::~Client() {}
 
 Client::Client(const Client &other)
 {
+    (*this)._server = other._server;
     *this = other;
 }
 
@@ -15,6 +12,7 @@ Client &Client::operator=(const Client &other)
 {
     if (this == &other)
         return (*this);
+    _server = other._server;
     _is_registered = other._is_registered;
     _is_passed = other._is_passed;
     _established_time = other._established_time;
@@ -29,8 +27,9 @@ Client &Client::operator=(const Client &other)
     return (*this);
 }
 
-Client::Client(int fd, std::string password)
+Client::Client(int fd, std::string password, Server *server)
 {
+    _server = server;
     _is_registered = false;
     _is_passed = false;
     _established_time = time(NULL);
@@ -45,130 +44,146 @@ Client::Client(int fd, std::string password)
     _socket_fd = fd;
 }
 
-void Client::execCommand(Command &cmd)
+void Client::execCommand(Command &cmd, Server &server)
 {
-    CommandHandler handler;
-    handler.execute(cmd, *this);
+    CommandHandler handler(this);
+    handler.execute(cmd, *this, server);
+}
+
+std::string	Client::getSource() const
+{
+	std::string source = ":" + _nickname + "!" + _username + "@" + _hostname;
+	return (source);
 }
 
 //////setters and getters
 
-void Client::set_try_password(std::string password)
+void Client::setTry_password(std::string password)
 {
     _try_password = password;
 }
 
-void Client::set_username(std::string username)
+void Client::setNickname(std::string nickname)
+{
+    _nickname = nickname;
+}
+
+void Client::setUsername(std::string username)
 {
     _username = username;
 }
 
-void Client::set_realname(std::string realname)
+void Client::setRealname(std::string realname)
 {
     _realname = realname;
 }
 
-void Client::set_hostname(std::string hostname)
+void Client::setHostname(std::string hostname)
 {
     _hostname = hostname;
 }
 
-void Client::set_mode(std::string mode)
+void Client::setMode(std::string mode)
 {
     _mode = mode;
 }
 
-void Client::set_ip(std::string ip)
+void Client::setIp(std::string ip)
 {
     _ip = ip;
 }
 
-void Client::set_password(std::string password)
+void Client::setPassword(std::string password)
 {
     _password = password;
 }
 
-void Client::set_socket_fd(int fd)
+void Client::setSocket_fd(int fd)
 {
     _socket_fd = fd;
 }
 
-std::string Client::get_username() const
-{
-    return _username;
-}
-
-std::string Client::get_realname() const
-{
-    return _realname;
-}
-
-std::string Client::get_hostname() const
-{
-    return _hostname;
-}
-
-std::string Client::get_mode() const
-{
-    return _mode;
-}
-
-std::string Client::get_ip() const
-{
-    return _ip;
-}
-
-std::string Client::get_password() const
-{
-    return _password;
-}
-
-std::string Client::get_try_password() const
-{
-    return _try_password;
-}
-
-int Client::get_socket_fd() const
-{
-    return _socket_fd;
-}
-
-void Client::set_is_registered(bool is_registered)
+void Client::setIs_registered(bool is_registered)
 {
     _is_registered = is_registered;
 }
 
-void Client::set_is_passed(bool is_passed)
+void Client::setIs_passed(bool is_passed)
 {
     _is_passed = is_passed;
 }
 
-void Client::set_established_time(time_t established_time)
+void Client::setEstablished_time(time_t established_time)
 {
     _established_time = established_time;
 }
 
-void Client::set_last_active_time(time_t last_active_time)
+void Client::setLast_active_time(time_t last_active_time)
 {
     _last_active_time = last_active_time;
 }
 
-bool Client::get_is_registered() const
+std::string Client::getNickname() const
+{
+    return _nickname;
+}
+
+std::string Client::getUsername() const
+{
+    return _username;
+}
+
+std::string Client::getRealname() const
+{
+    return _realname;
+}
+
+std::string Client::getHostname() const
+{
+    return _hostname;
+}
+
+std::string Client::getMode() const
+{
+    return _mode;
+}
+
+std::string Client::getIp() const
+{
+    return _ip;
+}
+
+std::string Client::getPassword() const
+{
+    return _password;
+}
+
+std::string Client::getTry_password() const
+{
+    return _try_password;
+}
+
+int Client::getSocket_fd() const
+{
+    return _socket_fd;
+}
+
+bool Client::getIs_registered() const
 {
     return _is_registered;
 }
 
-bool Client::get_is_passed() const
+bool Client::getIs_passed() const
 {
     return _is_passed;
 }
 
-time_t Client::get_established_time() const
+time_t Client::getEstablished_time() const
 {
     return _established_time;
 }
 
-time_t Client::get_last_active_time() const
+time_t Client::getLast_active_time() const
 {
     return _last_active_time;
 }
@@ -183,6 +198,7 @@ void Client::showClient()
     std::cout << "is_passed: " << _is_passed << std::endl;
     std::cout << "established_time: " << _established_time << std::endl;
     std::cout << "last_active_time: " << _last_active_time << std::endl;
+    std::cout << "nickname: " << _nickname << std::endl;
     std::cout << "username: " << _username << std::endl;
     std::cout << "hostname: " << _hostname << std::endl;
     std::cout << "realname: " << _realname << std::endl;
@@ -192,4 +208,9 @@ void Client::showClient()
     std::cout << "try_password: " << _try_password << std::endl;
     std::cout << "socket_fd: " << _socket_fd << std::endl;
     std::cout << "-----------------------------------" << std::endl;
+}
+
+Server *Client::getServer() const
+{
+    return _server;
 }

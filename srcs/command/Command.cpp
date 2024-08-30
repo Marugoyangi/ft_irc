@@ -43,12 +43,12 @@ void Command::parseCommand(std::string command){
 	std::vector<std::string> spl;
 	size_t pos = 0;
 
-	while ((pos = command.find(' ')) != std::string::npos) { // 공백을 기준으로 문자열을 나눔
-		if (pos > 0) {
-			// 공백이 아닌 부분을 벡터에 추가
-			spl.push_back(command.substr(0, pos));
-		}
-		// 다음 부분으로 이동
+	while ((pos = command.find(' ')) != std::string::npos) // 공백을 기준으로 문자열을 나눔
+	{
+		if (pos > 0) // 공백이 아닌 부분을 벡터에 추가
+		{			
+			spl.push_back(command.substr(0, pos));  // 다음 부분으로 이동 
+		} 
 		command.erase(0, pos + 1);
 	}
 
@@ -148,4 +148,9 @@ void	Command::setCommand(std::string tag, std::string source, std::string comman
 	_tag = tag;
 	_source = source;
 	_parameter = parameter;
+}
+
+std::vector<std::string>	Command::getParams() const
+{
+	return (_parameter);
 }

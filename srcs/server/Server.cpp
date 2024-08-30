@@ -2,7 +2,7 @@
 
 // Orthodox Canonical Form ////////////////////////////////////////////////////
 Server::Server(std::string port, std::string password, tm *time_local) : \
-                _port(port), _password(password), _time_local(time_local) {}
+                _port(port), _password(password), _time_local(time_local), _server_name("ircserv") {}
 
 Server::~Server() {}
 
@@ -15,6 +15,8 @@ Server &Server::operator=(const Server &other)
         _server_fd = other._server_fd;
         _event_fd = other._event_fd;
         _clients = other._clients;
+        _server_name = other._server_name;
+		_channels = other._channels;
     }
     return *this;
 }
@@ -23,6 +25,45 @@ Server::Server(const Server &other)
 {
     *this = other;
 }
+
+std::map<int, Client> &Server::getClients()
+{
+    return _clients;
+}
+
+std::map<std::string, Channel> &Server::getChannels()
+{
+    return _channels;
+}
+
+std::set<std::string> Server::getNicknames()
+{
+    std::set<std::string> nicknames;
+    std::map<int, Client>::iterator it;
+    for (it = _clients.begin(); it != _clients.end(); ++it)
+    {
+        if (it->second.getNickname() == "")
+            continue ;
+        nicknames.insert(it->second.getNickname());
+    }
+    return nicknames;
+}
+
+std::string Server::getPort()
+{
+    return _port;
+}
+
+std::string Server::getServerName()
+{
+    return _server_name;
+}
+
+time_t Server::getLocalTime()
+{
+    return mktime(_time_local);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Member Functions ////////////////////////////////////////////////////////////
 void Server::setupSocket()
@@ -114,7 +155,7 @@ void Server::setupEpoll()
                 {
                     die("epoll_ctl: client");
                 }
-                Client new_client(client, _password);
+                Client new_client(client, _password, this);
                 _clients.insert(std::pair<int, Client>(client, new_client)); // 클라이언트 클래스 추가
             }
             else
@@ -170,7 +211,7 @@ void Server::setupEpoll()
                         cmd.clearCommand();
                         cmd.parseCommand(message);
                         cmd.showCommand();
-                        tmp_client.execCommand(cmd);
+                        tmp_client.execCommand(cmd, *this);
                         // ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
                         // printf("Sent %ld bytes\n", sent_bytes);
                         // if (sent_bytes < 0)
@@ -269,7 +310,7 @@ void Server::setupKqueue()
                 {
                     die("kevent: client");
                 }
-                Client new_client(client, _password);
+                Client new_client(client, _password, this);
                 _clients.insert(std::pair<int, Client>(client, new_client)); // 클라이언트 클래스 추가
             }
             else // 클라이언트 소켓에서 이벤트 발생
@@ -322,8 +363,13 @@ void Server::setupKqueue()
                         ///////////////////////////////////////////////////////
                         cmd.clearCommand();
                         cmd.parseCommand(message);
-                        cmd.showCommand();
-                        tmp_client.execCommand(cmd);
+                        // cmd.showCommand();
+                        tmp_client.execCommand(cmd, *this);
+
+						for(std::map<std::string, Channel>::iterator iter = _channels.begin() ; iter != _channels.end(); iter++)
+						{
+							iter->second.showChannelMembers(*this);
+						}
                         // ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
                         // printf("Sent %ld bytes\n", sent_bytes);
                         // if (sent_bytes < 0)
@@ -357,4 +403,5 @@ void Server::stopKqueue()
     }
     close(_event_fd);
 }
+
 #endif

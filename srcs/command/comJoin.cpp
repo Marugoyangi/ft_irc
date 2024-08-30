@@ -1,50 +1,70 @@
-#include "Command.hpp"
+#include "CommandHandler.hpp"
 
-void	comJoin(Client const &client, std::vector<std::string> const &param)
+// void	comJoin(Client const &client, std::vector<std::string> const &param)
+void CommandHandler::join(Command &cmd, Client &client, Server &server)
 {
-	Command						_cmd;
-	std::string					_message;
-	std::vector<std::string>	_tem;
-	
-	if (param.size() < 1)
-	{
-		_tem.push_back("JOIN");
-		_message += com461(client, _cmd);
-		return ;
-	}
-	_tem.push_back(param[0]);
-	_cmd.setCommand("", client.get_hostname(), "JOIN", _tem);
-	_message = _cmd.deparseCommand();
-	_message += com332(client, _cmd);
-	_message += com333(client, _cmd);
-	_message += com353(client, _cmd);
-	_message += com366(client, _cmd);
-}
-
-std::string	com461(Client const &client, Command const &cmd)
-{
-	Command _cmd;
+	std::string channel_name = "";
+	std::string mode = "";
+	size_t comma_pos = 0;
+	size_t mode_pos = 0;
 	std::vector<std::string> _tem;
+	std::map<std::string, Channel> &channels = server.getChannels();
 
-	_tem.push_back(client.get_username());
-	_tem.push_back(cmd.getCommand());
-	_tem.push_back("Not enough parameters");
-	_cmd.setCommand("", client.get_username(), "461", _tem);
-	return (_cmd.deparseCommand());
-}
+	_tem = cmd.getParams();
+	if (_tem.size() < 1)
+	{
+		com461(client.getNickname(), "JOIN");
+		return;
+	}
+	while (_tem[0].length() > 0)
+	{
+		if ((comma_pos = _tem[0].find(',')) != std::string::npos)
+		{
+			channel_name = _tem[0].substr(0, comma_pos);
+			_tem[0].erase(1, comma_pos + 1);
+		}
+		else
+		{
+			channel_name = _tem[0];
+			_tem[0] = "";
+		}
+		if (channel_name[0] != '#')
+		{
+			_reply += ":localhost 476 " + client.getNickname() + " " + channel_name + " :Invalid channel name\r\n";
+			return;
+		}
 
-std::string	com332(Client const &client, Command const &cmd)
-{
-}
+		// mode처리 필요함/////////////////////////////////////
+		// mode처리 필요함/////////////////////////////////////
+		if (_tem.size() > 1)
+			{
+				mode_pos = _tem[1].find(',');
+				if (mode_pos > 0)
+				{
+					mode = _tem[1].substr(0, mode_pos);
+					_tem[1].erase(0, mode_pos + 1);
+				}
+			}
+		// mode처리 필요함/////////////////////////////////////
+		// mode처리 필요함/////////////////////////////////////
 
-std::string	com333(Client const &client, Command const &cmd)
-{
-}
-
-std::string	com353(Client const &client, Command const &cmd)
-{
-}
-
-std::string	com366(Client const &client, Command const &cmd)
-{
+		if (channels.find(channel_name) != channels.end()) // 기존에 있는 채널일 때
+		{
+			if (channels[channel_name].addClient(client) == -1)
+				continue;
+		}
+		else
+		{
+			channels[channel_name] = *(new Channel(channel_name)); // 채널 새로 만듦
+			if (channels[channel_name].addClient(client) == -1)
+				continue;
+		}
+		if (channels.find(channel_name) != channels.end() && channels[channel_name].getChannelTopic() != "")
+			com332(client, channels[channel_name]);
+		_reply += client.getSource() + " JOIN :" + channel_name + "\r\n";
+		com353(server, channels[channel_name]);
+		com366(client, channel_name);
+		channels[channel_name].messageToMembers(client, "JOIN", channel_name);
+	}
+	return;
 }
