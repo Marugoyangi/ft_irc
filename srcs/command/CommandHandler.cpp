@@ -94,7 +94,7 @@ void CommandHandler::execute(Command &cmd, Client &client, Server &server)
         }
         else if (command == "PING")
         {
-            // PING command
+            _reply = ":irc.local PONG irc.local :irc.local\r\n";
         }
         else if (command == "PONG")
         {
