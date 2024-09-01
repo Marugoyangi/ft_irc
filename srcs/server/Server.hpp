@@ -51,7 +51,7 @@ private:
     int _event_fd;
     std::string _server_name;
     std::map<int, Client> _clients;
-    std::map<std::string, Channel> _channels;
+    std::map<std::string, Channel*> _channels;
 
     // std::set<ClientCommand> _clients;
 
@@ -74,7 +74,7 @@ public:
 #endif
     // getter and setter
     std::map<int, Client>           &getClients();
-    std::map<std::string, Channel>  &getChannels();
+    std::map<std::string, Channel*>	&getChannels();
     std::set<std::string>           getNicknames();
     std::string                     getPort();
     std::string                     getServerName();

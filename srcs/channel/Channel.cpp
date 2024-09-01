@@ -95,7 +95,6 @@ std::string	Channel::getChannelMembers(Server &server) const   //chan operator ì
 	return (ret);
 }
 
-
 void	Channel::messageToMembers(Client const &client, std::string cmd, std::string param)
 {
 	std::string msg;
@@ -111,7 +110,20 @@ void	Channel::messageToMembers(Client const &client, std::string cmd, std::strin
 	}
 }
 
+void	Channel::messageToMembers(Client const &client, std::string cmd, std::string param1, std::string param2)
+{
+	std::string msg;
 
+	msg = client.getSource() + " " + cmd + " " + param1 + " :" + param2 + "\r\n";
+	for (int i = 0 ; i < (int)_fdlist.size(); i++)
+	{
+		if (_fdlist[i] == client.getSocket_fd())
+			continue;
+		std::cout << "\033[01m\033[33mmessage to client " << _fdlist[i] << ": "  << msg << "\033[0m" << std::endl;
+		if (isMember(_fdlist[i]))
+			send(_fdlist[i], msg.c_str(), msg.length(), 0);
+	}
+}
 
 void	Channel::showChannelMembers(Server &server)  // for Debug
 {

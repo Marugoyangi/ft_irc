@@ -34,6 +34,7 @@ class Channel
 		int		addClient(Client client);
 		void	removeClient(int fd);
 		void	messageToMembers(Client const &client, std::string cmd, std::string message);
+		void	messageToMembers(Client const &client, std::string cmd, std::string param1, std::string param2);
 
 		void	showChannelMembers(Server &server);  // for Debug
 };

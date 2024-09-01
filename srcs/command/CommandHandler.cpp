@@ -86,7 +86,7 @@ void CommandHandler::execute(Command &cmd, Client &client, Server &server)
         }
         else if (command == "PRIVMSG")
         {
-            // PRIVMSG command
+            privmsg(cmd, client, server);
         }
         else if (command == "NOTICE")
         {
@@ -194,13 +194,13 @@ void CommandHandler::nick(Command &cmd, Client &client)
         reply(431, "", "No nickname given");
         return;
     }
-    if (cmd.getParams()[0].size() > 9 || cmd.getParams()[0].size() < 1 || 
-    cmd.getParams()[0].find_first_not_of(\
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789[]\\`_^{|}-") != std::string::npos)
-    {
-        reply(432, "", "Erroneous nickname");
-        return;
-    }
+    // if (cmd.getParams()[0].size() > 9 || cmd.getParams()[0].size() < 1 || 
+    // cmd.getParams()[0].find_first_not_of(\
+    // "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789[]\\`_^{|}-") != std::string::npos)
+    // {
+    //     reply(432, "", "Erroneous nickname");
+    //     return;
+    // }
     std::string nickname = cmd.getParams()[0];
     std::set<std::string> nicknames = client.getServer()->getNicknames();
     if (nicknames.find(nickname) != nicknames.end())
@@ -273,12 +273,12 @@ void CommandHandler::user(Command &cmd, Client &client)
     // }
     // if (identified_user == "") // debug
     //     printf("Debug: Ident_serv: No USERID received\n");
-    if (cmd.getParams()[0].size() > 9 || cmd.getParams()[0].size() < 1 ||
-    cmd.getParams()[3].size() > 50)
-    {
-        reply(461, "USER", "Not enough parameters");
-        return;
-    }
+    // if (cmd.getParams()[0].size() > 9 || cmd.getParams()[0].size() < 1 ||
+    // cmd.getParams()[3].size() > 50)
+    // {
+    //     reply(461, "USER", "Not enough parameters");
+    //     return;
+    // }
     if (cmd.getParams()[2] != "*")
         client.setHostname(cmd.getParams()[2]); // debug purpose
     std::string str = "~" + cmd.getParams()[0]; // tilde means custom ident
