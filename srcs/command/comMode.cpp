@@ -23,7 +23,7 @@ void CommandHandler::handleChannelOperatorMode(Channel &channel, Client &client,
     // 모드 변경 메시지
     std::string mode_str = add ? "+o" : "-o";
     std::string mode_msg = ":" + client.getNickname() + " MODE " + channel.getChannelName() + " " + mode_str + " " + target_nick + "\r\n";
-    channel.messageToMembers3(client, "MODE", mode_msg);
+    channel.messageToMembers(client, "MODE", mode_msg);
 }
 
 
@@ -57,7 +57,7 @@ void CommandHandler::handleChannelMode(Channel &channel, Command const &cmd, Cli
                 // case 'i': handleInviteOnlyMode(...);
                 // case 'k': handleKeyMode(...);
                 default:
-                    _reply += ":localhost 472 " + std::string(modes[i]) + " :is an unknown mode character\r\n";
+                    _reply += ":localhost 472 " + client.getNickname() + " " + modes[i] + " :is unknown mode character \r\n";
                     break;
             }
         }
@@ -118,7 +118,7 @@ void CommandHandler::mode(Command const &cmd, Client &client, Server &server)
         std::map<std::string, Channel*> &channels = server.getChannels();
         if (channels.find(target) != channels.end())
         {
-            Channel &channel = channels[target];
+            Channel &channel = *channels[target];
             handleChannelMode(channel, cmd, client);
         }
         else
