@@ -10,7 +10,8 @@ SRCS = ./srcs/main.cpp\
 	   ./srcs/command/comNames.cpp\
 	   ./srcs/command/comJoin.cpp\
 	   ./srcs/command/comTopic.cpp\
-	   ./srcs/command/comPrivmsg.cpp
+	   ./srcs/command/comPrivmsg.cpp\
+	   ./srcs/command/comMode.cpp
 OBJS = $(SRCS:.cpp=.o)
 C++ = c++
 FLAGS = -Wall -Wextra -Werror -std=c++98 -I. -g3
