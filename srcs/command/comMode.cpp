@@ -14,7 +14,7 @@ void CommandHandler::handleChannelOperatorMode(Channel &channel, Client &client,
     if (!target_client)
     {
         // ERR_USERNOTINCHANNEL
-        _reply += ":localhost 441 " + client.getNickname() + " " + target_nick + " " + channel.getName() + " :They aren't on that channel\r\n";
+        _reply += ":localhost 441 " + client.getNickname() + " " + target_nick + " " + channel.getChannelName() + " :They aren't on that channel\r\n";
         return;
     }
 
@@ -22,7 +22,7 @@ void CommandHandler::handleChannelOperatorMode(Channel &channel, Client &client,
 
     // 모드 변경 메시지
     std::string mode_str = add ? "+o" : "-o";
-    std::string mode_msg = ":" + client.getNickname() + " MODE " + channel.getName() + " " + mode_str + " " + target_nick + "\r\n";
+    std::string mode_msg = ":" + client.getNickname() + " MODE " + channel.getChannelName() + " " + mode_str + " " + target_nick + "\r\n";
     channel.messageToMembers3(client, "MODE", mode_msg);
 }
 
@@ -57,7 +57,7 @@ void CommandHandler::handleChannelMode(Channel &channel, Command const &cmd, Cli
                 // case 'i': handleInviteOnlyMode(...);
                 // case 'k': handleKeyMode(...);
                 default:
-                    _reply += ":localhost 472 " + modes[i] + " :is an unknown mode character\r\n";
+                    _reply += ":localhost 472 " + std::string(modes[i]) + " :is an unknown mode character\r\n";
                     break;
             }
         }
@@ -115,7 +115,7 @@ void CommandHandler::mode(Command const &cmd, Client &client, Server &server)
     if (target[0] == '#')
     {
         // 채널 모드 처리
-        std::map<std::string, Channel> &channels = server.getChannels();
+        std::map<std::string, Channel*> &channels = server.getChannels();
         if (channels.find(target) != channels.end())
         {
             Channel &channel = channels[target];
