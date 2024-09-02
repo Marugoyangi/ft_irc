@@ -62,7 +62,7 @@ void CommandHandler::execute(Command &cmd, Client &client, Server &server)
         }
         else if (command == "MODE")
         {
-            // MODE command
+            mode(cmd, client, server);
         }
         else if (command == "TOPIC")
         {
