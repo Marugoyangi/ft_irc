@@ -35,6 +35,12 @@ class CommandHandler
         void	names(Command const &cmd, Client const &client, Server &server);
         void    topic(Command const &cmd, Client const &client, Server &server);
 		void	privmsg(Command const &cmd, Client const &client, Server &server);
+        void    mode(Command const &cmd, Client &client, Server &server);
+        //mode 옵션 함수            
+        void    handleChannelMode(Channel &channel, Command const &cmd, Client &client);
+        void    handleUserMode(Client &client, Command const &cmd);
+        void    handleChannelOperatorMode(Channel &channel, Client &client, std::vector<std::string> &params, bool add);
+
         void    com001(Client const &client, std::string const &server_name);               //RPL_WELCOME 
         void    com461(std::string const &nickname, std::string const &cmd);                //ERR_NEEDMOREPARAMS
         void    com353(Server &server, Channel const *channels);                            //RPL_NAMREPLY

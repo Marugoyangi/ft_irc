@@ -63,6 +63,8 @@ class Client
 		time_t		getEstablished_time() const;
 		time_t		getLast_active_time() const;
 		Server		*getServer() const;
+		void 		setInvisibleMode(bool enable); // invisible mode 설정
+    	bool 		isInvisible() const; // invisible mode 값 확인
 
 		//debug
 

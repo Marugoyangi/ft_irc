@@ -136,3 +136,11 @@ void	Channel::showChannelMembers(Server &server)  // for Debug
 	}
 	std::cout << std::endl;
 }
+
+void Channel::setOperator(Client &client, bool enable)
+{
+    if (enable)
+        _operators.insert(client.getNickname());
+    else
+        _operators.erase(client.getNickname());
+}
