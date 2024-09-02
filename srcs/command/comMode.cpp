@@ -23,7 +23,7 @@ void CommandHandler::handleChannelOperatorMode(Channel &channel, Client &client,
     // 모드 변경 메시지
     std::string mode_str = add ? "+o" : "-o";
     std::string mode_msg = ":" + client.getNickname() + " MODE " + channel.getName() + " " + mode_str + " " + target_nick + "\r\n";
-    channel.messageToMembers(client, mode_msg);
+    channel.messageToMembers3(client, "MODE", mode_msg);
 }
 
 

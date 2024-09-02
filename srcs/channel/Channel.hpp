@@ -34,13 +34,11 @@ class Channel
 		bool	isMember(int fd) const;
 		int		addClient(Client client);
 		void	removeClient(int fd);
-		void	messageToMembers(Client const &client, std::string cmd, std::string message);
-		void	messageToMembers(Client const &client, std::string cmd, std::string param1, std::string param2);
 
 		void 	setOperator(Client &client, bool enable);
     	bool 	isOperator(const Client &client) const;
     	void 	messageToMembers(Client const &client, std::string cmd, std::string param);
-    	Client* getClient(const std::string &nickname);
+		Client* getClient(const std::string &nickname);
 
 		void	showChannelMembers(Server &server);  // for Debug
 };
