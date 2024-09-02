@@ -31,7 +31,7 @@ std::map<int, Client> &Server::getClients()
     return _clients;
 }
 
-std::map<std::string, Channel> &Server::getChannels()
+std::map<std::string, Channel*> &Server::getChannels()
 {
     return _channels;
 }
@@ -357,7 +357,7 @@ void Server::setupKqueue()
                     while ((pos = data.find("\r\n")) != std::string::npos || (pos = data.find("\n")) != std::string::npos)
                     {
                         std::string message = data.substr(0, pos);
-                        printf("Received message: %s\n", message.c_str());
+                        printf("Received message  %d: %s\n", client, message.c_str());
                         
                         // Process the message ////////////////////////////////
                         ///////////////////////////////////////////////////////
@@ -366,9 +366,9 @@ void Server::setupKqueue()
                         // cmd.showCommand();
                         tmp_client.execCommand(cmd, *this);
 
-						for(std::map<std::string, Channel>::iterator iter = _channels.begin() ; iter != _channels.end(); iter++)
+						for(std::map<std::string, Channel*>::iterator iter = _channels.begin() ; iter != _channels.end(); iter++)
 						{
-							iter->second.showChannelMembers(*this);
+							iter->second->showChannelMembers(*this);
 						}
                         // ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
                         // printf("Sent %ld bytes\n", sent_bytes);

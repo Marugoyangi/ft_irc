@@ -188,6 +188,14 @@ time_t Client::getLast_active_time() const
     return _last_active_time;
 }
 
+void Client::setInvisibleMode(bool enable)
+{
+    if (enable)
+        _mode += 'i';
+    else
+        _mode.erase(std::remove(_mode.begin(), _mode.end(), 'i'), _mode.end());
+}
+
 //debug
 
 void Client::showClient()

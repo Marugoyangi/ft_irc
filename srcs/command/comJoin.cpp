@@ -8,7 +8,7 @@ void CommandHandler::join(Command &cmd, Client &client, Server &server)
 	size_t comma_pos = 0;
 	size_t mode_pos = 0;
 	std::vector<std::string> _tem;
-	std::map<std::string, Channel> &channels = server.getChannels();
+	std::map<std::string, Channel*> &channels = server.getChannels();
 
 	_tem = cmd.getParams();
 	if (_tem.size() < 1)
@@ -50,21 +50,22 @@ void CommandHandler::join(Command &cmd, Client &client, Server &server)
 
 		if (channels.find(channel_name) != channels.end()) // 기존에 있는 채널일 때
 		{
-			if (channels[channel_name].addClient(client) == -1)
+			if (channels[channel_name]->addClient(client) == -1)
 				continue;
 		}
 		else
 		{
-			channels[channel_name] = *(new Channel(channel_name)); // 채널 새로 만듦
-			if (channels[channel_name].addClient(client) == -1)
+			Channel	*tem = new Channel(channel_name);
+			channels.insert(std::make_pair(channel_name, tem)); // 채널 새로 만듦
+			if (channels[channel_name]->addClient(client) == -1)
 				continue;
 		}
-		if (channels.find(channel_name) != channels.end() && channels[channel_name].getChannelTopic() != "")
+		if (channels.find(channel_name) != channels.end() && channels[channel_name]->getChannelTopic() != "")
 			com332(client, channels[channel_name]);
 		_reply += client.getSource() + " JOIN :" + channel_name + "\r\n";
 		com353(server, channels[channel_name]);
 		com366(client, channel_name);
-		channels[channel_name].messageToMembers(client, "JOIN", channel_name);
+		channels[channel_name]->messageToMembers(client, "JOIN", channel_name);
 	}
 	return;
 }

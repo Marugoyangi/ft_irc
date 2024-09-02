@@ -86,7 +86,7 @@ void CommandHandler::execute(Command &cmd, Client &client, Server &server)
         }
         else if (command == "PRIVMSG")
         {
-            // PRIVMSG command
+            privmsg(cmd, client, server);
         }
         else if (command == "NOTICE")
         {
@@ -94,7 +94,7 @@ void CommandHandler::execute(Command &cmd, Client &client, Server &server)
         }
         else if (command == "PING")
         {
-            // PING command
+            _reply = ":irc.local PONG irc.local :irc.local\r\n";
         }
         else if (command == "PONG")
         {
@@ -133,11 +133,14 @@ void CommandHandler::reply(int numeric, std::string param, std::string message)
     std::string tail = ":" + message + "\r\n";
     std::stringstream ss;
     ss << numeric;
-    if (numeric == 0)
-        head = "";
+    if (ss.str().length() == 1)
+        head = "00" + ss.str();
+    else if (ss.str().length() == 2)
+        head = "0" + ss.str();
     else
         head = ss.str();
-    reply = head + " " + param + " " + tail;
+    reply = ":irc.local " + head + " " + param + " " + tail;
+    std::cout << "reply: " << reply << std::endl;
     _reply += reply;
 }
 
@@ -195,8 +198,7 @@ void CommandHandler::nick(Command &cmd, Client &client)
         return;
     }
     if (cmd.getParams()[0].size() > 9 || cmd.getParams()[0].size() < 1 || 
-    cmd.getParams()[0].find_first_not_of(\
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789[]\\`_^{|}-") != std::string::npos)
+        cmd.getParams()[0].find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_") != std::string::npos)
     {
         reply(432, "", "Erroneous nickname");
         return;
@@ -216,16 +218,16 @@ void CommandHandler::nick(Command &cmd, Client &client)
 
 void CommandHandler::user(Command &cmd, Client &client)
 {
-    // if (client.getIs_passed() == false)
-    // {
-    //     if (client.getTry_password() == client.getPassword())
-    //         client.setIs_passed(true);
-    //     else
-    //     {
-    //         reply(464, "","Password incorrect");
-    //         return;
-    //     }
-    // }
+    if (client.getIs_passed() == false)
+    {
+        if (client.getTry_password() == client.getPassword())
+            client.setIs_passed(true);
+        else
+        {
+            reply(464, "","Password incorrect");
+            return;
+        }
+    }
     client.setIs_passed(true);
 
     if (cmd.getParams().size() < 4)
@@ -239,40 +241,45 @@ void CommandHandler::user(Command &cmd, Client &client)
         return;
     }
     // // 암호와 인자 유효한 경우엔 Ident 프로토콜 실행
-    // std::string identified_user = "";
-    // std::string ident_server = "";
-
-    // ident_server = client.getServer()->getPort() + ",113\r\n";
-    // ssize_t sent = send(client.getSocket_fd(), ident_server.c_str(), ident_server.length(), 0);
-    // if (sent == -1)
-    // {
-    //     die("send");
-    //     return;
-    // }
-    // time_t start = time(NULL);
-    // while(1)
-    // {
-    //     if (time(NULL) - start > 10)
-    //         break ;
-    //     char buffer[BUFFER_SIZE];
-    //     ssize_t received = recv(client.getSocket_fd(), buffer, BUFFER_SIZE, 0);
-    //     if (received == -1)
-    //     {
-    //         die("recv");
-    //         return;
-    //     }
-    //     if (received == 0)
-    //         break;
-    //     std::string message(buffer, received);
-    //     std::string::size_type pos = message.find("USERID");
-    //     if (pos != std::string::npos)
-    //     {
-    //         identified_user = message.substr(pos + 7, message.find(" ", pos + 7) - pos - 7);
-    //         break;
-    //     }
-    // }
-    // if (identified_user == "") // debug
-    //     printf("Debug: Ident_serv: No USERID received\n");
+    std::string identified_user = "";
+    std::string ident_server = "";
+    struct sockaddr_in peer_addr;
+    socklen_t peer_addr_len = sizeof(peer_addr);
+    if (getpeername(client.getSocket_fd(), (struct sockaddr *)&peer_addr, &peer_addr_len) == -1)
+    {
+        die("getpeername");
+        return;
+    }
+    char client_port[6];
+    snprintf(client_port, 6, "%d", ntohs(peer_addr.sin_port));
+    ident_server = client.getServer()->getPort() + "," + client_port;
+    ssize_t sent = send(client.getSocket_fd(), ident_server.c_str(), ident_server.length(), 0);
+    if (sent == -1)
+    {
+        die("send");
+        return;
+    }
+    time_t start = time(NULL);
+    while(1)
+    {
+        if (time(NULL) - start > 10)
+            break ;
+        char buffer[BUFFER_SIZE];
+        ssize_t received = recv(client.getSocket_fd(), buffer, BUFFER_SIZE, 0);
+        if (received == 0)
+            break;
+        if (received == -1)
+            break;
+        std::string message(buffer, received);
+        std::string::size_type pos = message.find("USERID");
+        if (pos != std::string::npos)
+        {
+            identified_user = message.substr(pos + 7, message.find(" ", pos + 7) - pos - 7);
+            break;
+        }
+    }
+    if (identified_user == "") // debug
+        printf("Debug: Ident_serv: No USERID received\n");
     if (cmd.getParams()[0].size() > 9 || cmd.getParams()[0].size() < 1 ||
     cmd.getParams()[3].size() > 50)
     {
@@ -282,8 +289,8 @@ void CommandHandler::user(Command &cmd, Client &client)
     if (cmd.getParams()[2] != "*")
         client.setHostname(cmd.getParams()[2]); // debug purpose
     std::string str = "~" + cmd.getParams()[0]; // tilde means custom ident
-    // if (identified_user != "")
-    //     str = identified_user;
+    if (identified_user != "")
+        str = identified_user;
     std::transform(str.begin(), str.end(), str.begin(),
                    static_cast<int(*)(int)>(std::tolower));
     _client->setUsername(str);
@@ -292,31 +299,39 @@ void CommandHandler::user(Command &cmd, Client &client)
                    static_cast<int(*)(int)>(std::tolower));
     _client->setRealname(str);
     // ping-pong should be turned off until the user is registered
-    welcome(client);
     client.setIs_registered(true);
+    welcome(client);
 }
 
 void CommandHandler::welcome(Client &client)
 {
     std::string server_name = client.getServer()->getServerName();
-    com001(client, server_name);
-    // reply(001, "", "Welcome to the " + server_name + " Network, " + client.getNickname() + "!" + client.getUsername() + "@" + client.getHostname());
-    reply(002, "", "Your host is " + server_name + ", running version " + "ircserv 1.0");
-    reply(003, "", "This server was created sometime"); // need fix
-    reply(004, server_name + " ircserv 1.0 abhi bhi", "ao");
+    std::string client_name = client.getNickname();
+    reply(001, client_name, "Welcome to the " + server_name + " IRC Network, " + client_name + "!" + client.getUsername() + "@" + client.getHostname());
+    reply(002, client_name, "Your host is " + server_name + ", running version 1.0");
+    time_t time = client.getServer()->getLocalTime();
+    char buffer[80];
+    strftime(buffer, 80, "%a %b %d %H:%M:%S %Y", localtime(&time));
+    reply(003, client_name, "This server was created " + std::string(buffer));
+    reply(004, client_name, server_name + " 1.0 " + "ao" + " " + "o" + " " + "ov"); // need fix
     std::string modes =
         "CASEMAPPING=rfc1459 CHARSET=ascii NICKLEN=9 CHANNELLEN=50 TOPICLEN=390 "
-        "CHANTYPES=#& PREFIX=(ov)@+ MAXLIST=bqeI:100 MODES=4 NETWORK=" + server_name;
-    reply(005, "", modes);
-    reply(251, "", "There are 1 users and 0 services on 1 servers");
-    reply(252, "", "0 :operator(s) online");
-    reply(253, "", "0 :unknown connection(s)");
-    reply(254, "", "0 :channels formed");
-    reply(255, "", "I have 1 clients and 0 servers");
-    reply(265, "", "0 1 :Current local users 0, max 1");
-    reply(266, "", "1 1 :Current global users 1, max 1");
-    reply(375, "", ":- " + server_name + " Message of the Day - ");
-    reply(372, "", ":- Welcome to the " + server_name + " IRC Network");
-    reply(376, "", "End of /MOTD command");
+        "CHANTYPES=#& PREFIX=(ov)@+ MAXLIST=bqeI:100 MODES=4 NETWORK=" + server_name; // need fix
+    reply(005, client_name, modes);
+
+    //need fix///////////////////////////////
+    reply(251, client_name, "There are 1 users and 0 services on 1 servers");
+    reply(252, client_name, "0 :operator(s) online");
+    reply(253, client_name, "0 :unknown connection(s)");
+    reply(254, client_name, "0 :channels formed");
+    reply(255, client_name, "I have 1 clients and 0 servers");
+    reply(265, client_name, "0 1 :Current local users 0, max 1");
+    reply(266, client_name, "1 1 :Current global users 1, max 1");
+    //need fix///////////////////////////////
+
+    reply(375, client_name, ":- " + server_name + " Message of the Day - ");
+    reply(372, client_name, ":- Welcome to the " + server_name + " IRC Network");
+    reply(372, client_name, ":-");
+    reply(376, client_name, "End of message of the day.");
 }
 

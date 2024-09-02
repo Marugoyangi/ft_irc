@@ -23,12 +23,12 @@ void	CommandHandler::names(Command const &cmd, Client const &client, Server &ser
 	}
 }
 
-void	CommandHandler::com353(Server &server, Channel const &channel)  //RPL_NAMREPLY
+void	CommandHandler::com353(Server &server, Channel const *channel)  //RPL_NAMREPLY
 {
-	if (channel.isMember(this->_client->getSocket_fd()))
+	if (channel->isMember(this->_client->getSocket_fd()))
 	{
-		_reply += ":irc.local 353 " + this->_client->getNickname() + " = " + channel.getChannelName() + " :";
-		_reply += channel.getChannelMembers(server) + "\r\n";
+		_reply += ":irc.local 353 " + this->_client->getNickname() + " = " + channel->getChannelName() + " :";
+		_reply += channel->getChannelMembers(server) + "\r\n";
 	}
 }
 
