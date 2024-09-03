@@ -57,7 +57,7 @@ void CommandHandler::handleChannelMode(Channel &channel, Command const &cmd, Cli
                 // case 'i': handleInviteOnlyMode(...);
                 // case 'k': handleKeyMode(...);
                 default:
-                    _reply += ":localhost 472 " + std::string str(1, modes[i]); + " :is an unknown mode character\r\n";
+                    _reply += ":localhost 472 " + client.getNickname() + " " + modes[i] + " :is unknown mode character \r\n";
                     break;
             }
         }
@@ -118,7 +118,7 @@ void CommandHandler::mode(Command const &cmd, Client &client, Server &server)
         std::map<std::string, Channel*> &channels = server.getChannels();
         if (channels.find(target) != channels.end())
         {
-            Channel &channel = *(channels[target]);
+            Channel &channel = *channels[target];
             handleChannelMode(channel, cmd, client);
         }
         else

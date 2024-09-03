@@ -129,3 +129,15 @@ void Channel::setOperator(Client &client, bool enable)
     else
         _operators.erase(client.getNickname());
 }
+
+bool Channel::isOperator(const Client &client) const
+{
+	return _operators.find(client.getNickname()) != _operators.end();
+}
+
+Client* Channel::getClient(const std::string &nickname)
+{
+	// need fix
+	(void)nickname;
+	return NULL;
+}
