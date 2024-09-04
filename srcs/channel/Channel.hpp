@@ -6,6 +6,12 @@
 # include <iostream>
 # include <set>
 
+#define MODE_I 0x1 // invite only 0b00000001
+#define MODE_T 0x2 // topic settable by channel operator only 0b00000010
+#define MODE_K 0x4 // channel key required for entry 0b00000100
+#define MODE_O 0x8 // operator only 0b00001000
+#define MODE_L 0x10 // limit the number of clients that may be in a channel 0b00010000
+
 class Server;
 class Client;
 
@@ -17,6 +23,8 @@ class Channel
 		time_t				_topic_time;
 		std::set<std::string> _operators;
 		std::vector<int>	_fdlist;
+		int					_mode;
+		std::string			_key;
 
 	public :
 		Channel();
@@ -40,6 +48,12 @@ class Channel
     	bool 	isOperator(const Client &client) const;
     	void 	messageToMembers(Client const &client, std::string cmd, std::string param);
 		Client* getClient(const std::string &nickname);
+
+		void	setMode(int mode);
+		void	unsetMode(int mode);
+		bool	isMode(int mode) const;	
+		void	setKey(std::string key);
+		std::string getKey() const;
 
 		void	showChannelMembers(Server &server);  // for Debug
 };

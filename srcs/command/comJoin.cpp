@@ -4,9 +4,9 @@
 void CommandHandler::join(Command &cmd, Client &client, Server &server)
 {
 	std::string channel_name = "";
-	std::string mode = "";
+	std::string key = "";
 	size_t comma_pos = 0;
-	size_t mode_pos = 0;
+	size_t key_pos = 0;
 	std::vector<std::string> _tem;
 	std::map<std::string, Channel*> &channels = server.getChannels();
 
@@ -30,32 +30,37 @@ void CommandHandler::join(Command &cmd, Client &client, Server &server)
 		}
 		if (channel_name[0] != '#')
 		{
-			_reply += ":localhost 476 " + client.getNickname() + " " + channel_name + " :Invalid channel name\r\n";
+			reply(476, client.getNickname(), std::string(channel_name + "Invalid channel name"));
 			return;
 		}
-
-		// mode처리 필요함/////////////////////////////////////
-		// mode처리 필요함/////////////////////////////////////
 		if (_tem.size() > 1)
 			{
-				mode_pos = _tem[1].find(',');
-				if (mode_pos > 0)
+				key_pos = _tem[1].find(',');
+				if (key_pos > 0)
 				{
-					mode = _tem[1].substr(0, mode_pos);
-					_tem[1].erase(0, mode_pos + 1);
+					key = _tem[1].substr(0, key_pos); // 
+					_tem[1].erase(0, key_pos + 1); //
 				}
 			}
-		// mode처리 필요함/////////////////////////////////////
-		// mode처리 필요함/////////////////////////////////////
-
 		if (channels.find(channel_name) != channels.end()) // 기존에 있는 채널일 때
 		{
+			if (channels[channel_name]->isMode(MODE_K) && channels[channel_name]->getKey() != key) // 암호 확인
+			{
+				std::string tmp = client.getNickname() + " " + channel_name;
+				reply(475, tmp,"Cannot join channel (+k)");
+				continue;
+			}
 			if (channels[channel_name]->addClient(client) == -1)
 				continue;
 		}
 		else
 		{
 			Channel	*tem = new Channel(channel_name);
+			if (key != "")
+			{
+				tem->setKey(key);
+				tem->setMode(MODE_K); // channel key required for entry
+			}
 			channels.insert(std::make_pair(channel_name, tem)); // 채널 새로 만듦
 			if (channels[channel_name]->addClient(client) == -1)
 				continue;

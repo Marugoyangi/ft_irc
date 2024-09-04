@@ -2,7 +2,7 @@
 
 Channel::Channel() {}
 
-Channel::Channel(std::string myname) : _channel_name(myname), _topic(""){}
+Channel::Channel(std::string myname) : _channel_name(myname), _topic(""), _topic_time(0), _mode(0), _key("") {}
 
 Channel::~Channel() {}
 
@@ -140,4 +140,29 @@ Client* Channel::getClient(const std::string &nickname)
 	// need fix
 	(void)nickname;
 	return NULL;
+}
+
+void Channel::setMode(int mode)
+{
+	_mode |= mode;
+}
+
+void Channel::unsetMode(int mode)
+{
+	_mode &= ~mode;
+}
+
+bool Channel::isMode(int mode) const
+{
+	return _mode & mode;
+}
+
+void Channel::setKey(std::string key)
+{
+	_key = key;
+}
+
+std::string Channel::getKey() const
+{
+	return _key;
 }
