@@ -2,7 +2,7 @@
 
 Channel::Channel() {}
 
-Channel::Channel(std::string myname) : _channel_name(myname), _topic(""), _topic_time(0), _mode(0), _key("") {}
+Channel::Channel(std::string myname) : _channel_name(myname), _topic(""), _topic_time(0), _mode(0), _key(""), _limit(-1){}
 
 Channel::~Channel() {}
 
@@ -165,4 +165,14 @@ void Channel::setKey(std::string key)
 std::string Channel::getKey() const
 {
 	return _key;
+}
+
+void Channel::setLimit(int limit)
+{
+	_limit = limit;
+}
+
+int Channel::getLimit() const
+{
+	return _limit;
 }

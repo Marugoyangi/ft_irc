@@ -25,6 +25,7 @@ class Channel
 		std::vector<int>	_fdlist;
 		int					_mode;
 		std::string			_key;
+		int					_limit;
 
 	public :
 		Channel();
@@ -54,6 +55,8 @@ class Channel
 		bool	isMode(int mode) const;	
 		void	setKey(std::string key);
 		std::string getKey() const;
+		void	setLimit(int limit);
+		int		getLimit() const;
 
 		void	showChannelMembers(Server &server);  // for Debug
 };
