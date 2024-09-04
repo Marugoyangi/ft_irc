@@ -315,14 +315,13 @@ void CommandHandler::welcome(Client &client)
     strftime(buffer, 80, "%a %b %d %H:%M:%S %Y", localtime(&time));
     reply(003, client_name, "This server was created " + std::string(buffer));
     reply(004, client_name, server_name + " 1.0 " + "o " + "itkol");
-    std::string modes =
-        "CASEMAPPING=rfc1459 CHARSET=ascii NICKLEN=9 CHANNELLEN=50 TOPICLEN=390 "
-        "CHANTYPES=#& PREFIX=(ov)@ MODES=4 NETWORK=" + server_name;
-    reply(005, client_name, modes);
+    std::stringstream modes;
+    modes << "CASEMAPPING=rfc1459 CHARSET=ascii NICKLEN=9 CHANNELLEN=50 TOPICLEN=390 " << "CHANTYPES=#& PREFIX=(ov)@ MODES=4 NETWORK=" << server_name << " MAXTARGETS=" << MAX_TARGETS << " :are supported by this server";
+    reply(005, client_name, modes.str());
 
     //need fix///////////////////////////////
     std::stringstream ss;
-    ss << "There are " << client.getServer()->getClients().size() << "clients, 0 services and 1 servers";
+    ss << "There are " << client.getServer()->getClients().size() << " clients, 0 services and 1 servers";
     reply(251, client_name, ss.str());
     // 관리자, 미인증
     reply(252, client_name, "0 :operator(s) online"); // need fix

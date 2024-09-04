@@ -7,14 +7,14 @@ void CommandHandler::privmsg(Command const &cmd, Client const &client, Server &s
     if (params.empty())
     {
         // ERR_NORECIPIENT
-        _reply += ":localhost 411 " + client.getNickname() + " :No recipient given (PRIVMSG)\r\n";
+        reply(411, client.getNickname(), "No recipient given (PRIVMSG)");
         return;
     }
 
     if (params.size() < 2)
     {
         // ERR_NOTEXTTOSEND
-        _reply += ":localhost 412 " + client.getNickname() + " :No text to send\r\n";
+        reply(412, client.getNickname(), "No text to send");
         return;
     }
 
@@ -41,12 +41,12 @@ void CommandHandler::privmsg(Command const &cmd, Client const &client, Server &s
             if (channels.find(target) != channels.end())
             {
                 Channel &channel = *channels[target];
-                channel.messageToMembers(client, "PRIVMSG" + target, message + "\r\n");
+                channel.messageToMembers(client, "PRIVMSG " + target, message + "\r\n");
             }
             else
             {
                 // ERR_NOSUCHCHANNEL
-                _reply += ":localhost 403 " + client.getNickname() + " " + target + " :No such channel\r\n";
+                reply(403, client.getNickname(), target + " :No such channel");
             }
         }
         else if (target[0] == '#' || target[0] == '$')
@@ -78,7 +78,7 @@ void CommandHandler::privmsg(Command const &cmd, Client const &client, Server &s
 			if (!mask_found)
 			{
 				// ERR_NOSUCHNICK: 호스트 마스크 또는 서버 마스크가 일치하는 클라이언트를 찾지 못했을 때
-				_reply += ":localhost 401 " + client.getNickname() + " " + target + " :No such nick/channel\r\n";
+                reply(401, client.getNickname(), target + " :No such nick/channel");
 			}
 		}
         else
@@ -93,7 +93,8 @@ void CommandHandler::privmsg(Command const &cmd, Client const &client, Server &s
                 {
                     user_found = true;
                     Client &recipient = it->second;
-                    std::string full_msg = ":" + client.getNickname() + " PRIVMSG " + target + " :" + message + "\r\n";
+                    std::string full_msg = client.getSource() + " PRIVMSG " + target + " :" + message + "\r\n";
+                    std::cout << "Full message: " << full_msg << std::endl;
                     send(recipient.getSocket_fd(), full_msg.c_str(), full_msg.length(), 0);
                     break;
                 }
@@ -102,7 +103,7 @@ void CommandHandler::privmsg(Command const &cmd, Client const &client, Server &s
             if (!user_found)
             {
                 // ERR_NOSUCHNICK
-                _reply += ":localhost 401 " + client.getNickname() + " " + target + " :No such nick/channel\r\n";
+                reply(401, client.getNickname(), target + " :No such nick/channel");
             }
         }
     }

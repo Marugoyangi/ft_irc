@@ -104,7 +104,7 @@ void	Channel::messageToMembers(Client const &client, std::string cmd, std::strin
 	{
 		if (_fdlist[i] == client.getSocket_fd())
 			continue;
-		std::cout << "\033[01m\033[33mmessage to client " << _fdlist[i] << ": "  << msg << "\033[0m" << std::endl;
+		std::cout << "\033[01m\033[33mmessage to client " << _fdlist[i] << ": "  << msg << "\033[0m" << std::endl; // debug
 		if (isMember(_fdlist[i]))
 			send(_fdlist[i], msg.c_str(), msg.length(), 0);
 	}

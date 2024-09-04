@@ -40,6 +40,7 @@ extern void die(const char *msg);
 #define BACKLOG 10
 #define BUFFER_SIZE 512
 #define MAX_CLIENTS 1024
+#define MAX_TARGETS 4
 
 class Client;
 class Server
