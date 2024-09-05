@@ -78,7 +78,7 @@ void CommandHandler::execute(Command &cmd, Client &client, Server &server)
         }
         else if (command == "INVITE")
         {
-            // INVITE command
+            invite(cmd, client, server);
         }
         else if (command == "KICK")
         {
@@ -307,31 +307,44 @@ void CommandHandler::welcome(Client &client)
 {
     std::string server_name = client.getServer()->getServerName();
     std::string client_name = client.getNickname();
-    reply(001, client_name, "Welcome to the " + server_name + " IRC Network, " + client_name + "!" + client.getUsername() + "@" + client.getHostname());
+    reply(001, client_name, "Welcome to the " + server_name + " IRC Network, " + client_name + "!" + \
+    client.getUsername() + "@" + client.getHostname());
     reply(002, client_name, "Your host is " + server_name + ", running version 1.0");
     time_t time = client.getServer()->getLocalTime();
     char buffer[80];
     strftime(buffer, 80, "%a %b %d %H:%M:%S %Y", localtime(&time));
     reply(003, client_name, "This server was created " + std::string(buffer));
-    reply(004, client_name, server_name + " 1.0 " + "ao" + " " + "o" + " " + "ov"); // need fix
-    std::string modes =
-        "CASEMAPPING=rfc1459 CHARSET=ascii NICKLEN=9 CHANNELLEN=50 TOPICLEN=390 "
-        "CHANTYPES=#& PREFIX=(ov)@+ MAXLIST=bqeI:100 MODES=4 NETWORK=" + server_name; // need fix
-    reply(005, client_name, modes);
+    reply(004, client_name, server_name + " 1.0 " + "o " + "itkol");
+    std::stringstream modes;
+    modes << "CASEMAPPING=rfc1459 CHARSET=ascii NICKLEN=9 CHANNELLEN=50 TOPICLEN=390 " << "CHANTYPES=#& PREFIX=(ov)@ MODES=4 NETWORK=" << server_name << " MAXTARGETS=" << MAX_TARGETS << " :are supported by this server";
+    reply(005, client_name, modes.str());
 
     //need fix///////////////////////////////
-    reply(251, client_name, "There are 1 users and 0 services on 1 servers");
-    reply(252, client_name, "0 :operator(s) online");
+    std::stringstream ss;
+    ss << "There are " << client.getServer()->getClients().size() << " clients, 0 services and 1 servers";
+    reply(251, client_name, ss.str());
+    // 관리자, 미인증
+    reply(252, client_name, "0 :operator(s) online"); // need fix
     reply(253, client_name, "0 :unknown connection(s)");
-    reply(254, client_name, "0 :channels formed");
-    reply(255, client_name, "I have 1 clients and 0 servers");
-    reply(265, client_name, "0 1 :Current local users 0, max 1");
-    reply(266, client_name, "1 1 :Current global users 1, max 1");
+    ////////////////////////////////////////
+    ss.str("");
+    ss << client.getServer()->getChannels().size() << " :channels formed";
+    reply(254, client_name, ss.str());
+    ss.str("");
+    ss << client.getServer()->getClients().size() << " :clients and 1 servers";
+    reply(255, client_name, ss.str());
+    ss.str("");
+    ss << client.getServer()->getClients().size() << " :Current local users " \
+    << client.getServer()->getClients().size() << ", max " << MAX_CLIENTS;
+    ss.str("");
+    reply(265, client_name, ss.str());
+    ss << client.getServer()->getClients().size() << " :Current global users " \
+    << client.getServer()->getClients().size() << ", max " << MAX_CLIENTS;
+    ss.str("");
+    reply(266, client_name, ss.str());
     //need fix///////////////////////////////
-
     reply(375, client_name, ":- " + server_name + " Message of the Day - ");
-    reply(372, client_name, ":- Welcome to the " + server_name + " IRC Network");
-    reply(372, client_name, ":-");
+    reply(372, client_name, ":- Welcome to the " + server_name + " IRC Network -:");
     reply(376, client_name, "End of message of the day.");
 }
 

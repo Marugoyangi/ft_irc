@@ -1,32 +1,5 @@
 #include "CommandHandler.hpp"
 
-void CommandHandler::handleChannelOperatorMode(Channel &channel, Client &client, std::vector<std::string> &params, bool add)
-{
-    if (params.size() < 3)
-    {
-        // ERR_NEEDMOREPARAMS
-        _reply += ":localhost 461 " + client.getNickname() + " MODE :Not enough parameters\r\n";
-        return;
-    }
-
-    std::string target_nick = params[2];
-    Client *target_client = channel.getClient(target_nick);
-    if (!target_client)
-    {
-        // ERR_USERNOTINCHANNEL
-        _reply += ":localhost 441 " + client.getNickname() + " " + target_nick + " " + channel.getChannelName() + " :They aren't on that channel\r\n";
-        return;
-    }
-
-    channel.setOperator(*target_client, add);
-
-    // 모드 변경 메시지
-    std::string mode_str = add ? "+o" : "-o";
-    std::string mode_msg = ":" + client.getNickname() + " MODE " + channel.getChannelName() + " " + mode_str + " " + target_nick + "\r\n";
-    channel.messageToMembers(client, "MODE", mode_msg);
-}
-
-
 void CommandHandler::handleChannelMode(Channel &channel, Command const &cmd, Client &client)
 {
     std::vector<std::string> params = cmd.getParams();
@@ -53,9 +26,14 @@ void CommandHandler::handleChannelMode(Channel &channel, Command const &cmd, Cli
                 case 'o': // 채널 운영자 설정
                     handleChannelOperatorMode(channel, client, params, add);
                     break;
-                // 다른 채널 모드 처리 (예: i, k, l 등)
-                // case 'i': handleInviteOnlyMode(...);
-                // case 'k': handleKeyMode(...);
+                case 'i':
+                    handleChannelInviteMode(channel, client, params, add);
+                // case 'k':
+                //     handleChannelIKeyMode(channel, client, params, add);
+                // case 'l':
+                //     handleChannelLimitMode(channel, client, params, add);
+                // case 't':
+                //     handleChannelTopicMode(channel, client, params, add);
                 default:
                     _reply += ":localhost 472 " + client.getNickname() + " " + modes[i] + " :is unknown mode character \r\n";
                     break;

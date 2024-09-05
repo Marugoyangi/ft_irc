@@ -2,7 +2,7 @@
 
 Channel::Channel() {}
 
-Channel::Channel(std::string myname) : _channel_name(myname), _topic(""){}
+Channel::Channel(std::string myname) : _channel_name(myname), _topic(""), _topic_time(0), _mode(0), _key(""), _limit(-1){}
 
 Channel::~Channel() {}
 
@@ -104,7 +104,7 @@ void	Channel::messageToMembers(Client const &client, std::string cmd, std::strin
 	{
 		if (_fdlist[i] == client.getSocket_fd())
 			continue;
-		std::cout << "\033[01m\033[33mmessage to client " << _fdlist[i] << ": "  << msg << "\033[0m" << std::endl;
+		std::cout << "\033[01m\033[33mmessage to client " << _fdlist[i] << ": "  << msg << "\033[0m" << std::endl; // debug
 		if (isMember(_fdlist[i]))
 			send(_fdlist[i], msg.c_str(), msg.length(), 0);
 	}
@@ -140,4 +140,39 @@ Client* Channel::getClient(const std::string &nickname)
 	// need fix
 	(void)nickname;
 	return NULL;
+}
+
+void Channel::setMode(int mode)
+{
+	_mode |= mode;
+}
+
+void Channel::unsetMode(int mode)
+{
+	_mode &= ~mode;
+}
+
+bool Channel::isMode(int mode) const
+{
+	return _mode & mode;
+}
+
+void Channel::setKey(std::string key)
+{
+	_key = key;
+}
+
+std::string Channel::getKey() const
+{
+	return _key;
+}
+
+void Channel::setLimit(int limit)
+{
+	_limit = limit;
+}
+
+int Channel::getLimit() const
+{
+	return _limit;
 }
