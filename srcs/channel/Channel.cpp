@@ -176,3 +176,20 @@ int Channel::getLimit() const
 {
 	return _limit;
 }
+
+void	Channel::addInvitedList(std::string client_name)
+{
+	_invited_list.insert(client_name);
+}
+
+bool Channel::checkInvitedList(Client &client)
+{
+    std::string nickname = client.getNickname();
+
+    // _invited_list에 nickname이 존재하는지 확인
+    if (_invited_list.find(nickname) != _invited_list.end()) {
+        return true;
+    }
+    return false;
+}
+

@@ -28,7 +28,8 @@ void CommandHandler::handleChannelMode(Channel &channel, Command const &cmd, Cli
                     break;
                 case 'i':
                     handleChannelInviteMode(channel, client, params, add);
-                // case 'k':
+		    break;
+		// case 'k':
                 //     handleChannelIKeyMode(channel, client, params, add);
                 // case 'l':
                 //     handleChannelLimitMode(channel, client, params, add);

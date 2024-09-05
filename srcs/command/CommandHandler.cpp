@@ -162,6 +162,19 @@ void CommandHandler::reply(std::string const &command, std::vector<std::string> 
     _reply += "\r\n";
 }
 
+void CommandHandler::reply(Client &client, const char* numeric, const std::string &channel_name, const std::string &message)
+{
+    std::string reply;
+    std::string tail = ":" + message + "\r\n";
+
+    // 클라이언트 닉네임과 함께 답변 생성
+    reply = ":irc.local " + std::string(numeric) + " " + client.getNickname() + " " + channel_name + " " + tail;
+
+    std::cout << "reply: " << reply << std::endl;
+
+    // 실제로 전송할 _reply 변수에 결과 저장
+    _reply += reply;
+}
 
 // all those commands
 

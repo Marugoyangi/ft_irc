@@ -75,7 +75,7 @@ void CommandHandler::join(Command &cmd, Client &client, Server &server)
 				tem->setMode(MODE_K); // channel key required for entry
 			}
 			channels.insert(std::make_pair(channel_name, tem)); // 채널 새로 만듦
-			channels.setOperator(client, true); // 채널 최초 생성시 관리자 지정
+			tem->setOperator(client, true); // 채널 최초 생성시 관리자 지정
 			if (channels[channel_name]->addClient(client) == -1)
 				continue;
 		}

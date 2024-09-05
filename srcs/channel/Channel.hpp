@@ -59,6 +59,7 @@ class Channel
 		void	setLimit(int limit);
 		int		getLimit() const;
 		bool	checkInvitedList(Client &client);
+		void	addInvitedList(std::string client_name);
 
 		void	showChannelMembers(Server &server);  // for Debug
 };
