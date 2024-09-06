@@ -43,7 +43,7 @@ void CommandHandler::join(Command &cmd, Client &client, Server &server)
 				}
 			}
 		if (channels.find(channel_name) != channels.end()) // 기존에 있는 채널일 때
-		{ 
+		{
 			if (channels[channel_name]->isMode(MODE_L) && \
 			channels[channel_name]->getChannelMembers(server).size() >= (long unsigned)channels[channel_name]->getLimit()) // 채널 인원 제한
 			{

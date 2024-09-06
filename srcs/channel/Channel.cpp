@@ -192,4 +192,3 @@ bool Channel::checkInvitedList(Client &client)
     }
     return false;
 }
-

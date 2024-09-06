@@ -43,10 +43,7 @@ class CommandHandler
         void    handleChannelOperatorMode(Channel &channel, Client &client, std::vector<std::string> &params, bool add);
 
 	void	handleChannelInviteMode(Channel &channel, Client &client, std::vector<std::string> &params, bool add);
-	//
 	void 	invite(Command &cmd, Client &client, Server &server);
-        
-	
 	void    com001(Client const &client, std::string const &server_name);               //RPL_WELCOME 
         void    com461(std::string const &nickname, std::string const &cmd);                //ERR_NEEDMOREPARAMS
         void    com353(Server &server, Channel const *channels);                            //RPL_NAMREPLY
