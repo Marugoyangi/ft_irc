@@ -61,7 +61,6 @@ void CommandHandler::handleChannelMode(Channel &channel, Command const &cmd, Cli
                 //     handleChannelLimitMode(channel, client, params, add);
                 // case 't':
                 //     handleChannelTopicMode(channel, client, params, add);
-=======
                 // 다른 채널 모드 처리 (예: i, k, l 등)
                 // case 'i': handleInviteOnlyMode(...);
                 // case 'k': handleKeyMode(...);
