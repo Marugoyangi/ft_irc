@@ -9,8 +9,8 @@
 #define MODE_I 0x1 // invite only 0b00000001
 #define MODE_T 0x2 // topic settable by channel operator only 0b00000010
 #define MODE_K 0x4 // channel key required for entry 0b00000100
-#define MODE_O 0x8 // operator only 0b00001000
-#define MODE_L 0x10 // limit the number of clients that may be in a channel 0b00010000
+#define MODE_L 0x8 // limit the number of clients 0b00001000
+// #define MODE_O 0x8 // operator only 0b00001000 we don't need this
 
 class Server;
 class Client;
@@ -60,6 +60,8 @@ class Channel
 		int		getLimit() const;
 		bool	checkInvitedList(Client &client);
 		void	addInvitedList(std::string client_name);
+		void	setTopicTime(time_t time);
+		std::vector<int> &getFdList();
 
 		void	showChannelMembers(Server &server);  // for Debug
 };

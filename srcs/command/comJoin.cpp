@@ -45,13 +45,15 @@ void CommandHandler::join(Command &cmd, Client &client, Server &server)
 		if (channels.find(channel_name) != channels.end()) // 기존에 있는 채널일 때
 		{
 			if (channels[channel_name]->isMode(MODE_L) && \
-			channels[channel_name]->getChannelMembers(server).size() >= (long unsigned)channels[channel_name]->getLimit()) // 채널 인원 제한
+			((int)channels[channel_name]->getFdList().size() >= channels[channel_name]->getLimit())) // 채널 인원 제한
 			{
+				std::cout << "channel limit" << std::endl;
+				std::cout << channels[channel_name]->getChannelMembers(server).size() << std::endl;
 				std::string tmp = client.getNickname() + " " + channel_name;
 				reply(471, tmp, "Cannot join channel (+l)");
 				continue;
 			}
-			else if (channels[channel_name]->isMode(MODE_I) && channels[channel_name]->checkInvitedList(client)) // 초대만 가능한 채널
+			else if (channels[channel_name]->isMode(MODE_I) && !channels[channel_name]->checkInvitedList(client)) // 초대만 가능한 채널
 			{
 				std::string tmp = client.getNickname() + " " + channel_name;
 				reply(473, tmp, "Cannot join channel (+i)");

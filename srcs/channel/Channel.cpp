@@ -192,3 +192,13 @@ bool Channel::checkInvitedList(Client &client)
     }
     return false;
 }
+
+void Channel::setTopicTime(time_t time)
+{
+	_topic_time = time;
+}
+
+std::vector<int> &Channel::getFdList()
+{
+	return _fdlist;
+}
