@@ -51,7 +51,7 @@ void CommandHandler::join(Command &cmd, Client &client, Server &server)
 				reply(471, tmp, "Cannot join channel (+l)");
 				continue;
 			}
-			else if (channels[channel_name]->isMode(MODE_I)) // 초대만 가능한 채널
+			else if (channels[channel_name]->isMode(MODE_I) && channels[channel_name]->checkInvitedList(client)) // 초대만 가능한 채널
 			{
 				std::string tmp = client.getNickname() + " " + channel_name;
 				reply(473, tmp, "Cannot join channel (+i)");
@@ -75,6 +75,7 @@ void CommandHandler::join(Command &cmd, Client &client, Server &server)
 				tem->setMode(MODE_K); // channel key required for entry
 			}
 			channels.insert(std::make_pair(channel_name, tem)); // 채널 새로 만듦
+			tem->setOperator(client, true); // 채널 최초 생성시 관리자 지정
 			if (channels[channel_name]->addClient(client) == -1)
 				continue;
 		}

@@ -26,6 +26,7 @@ class Channel
 		int					_mode;
 		std::string			_key;
 		int					_limit;
+		std::set<std::string> _invited_list;
 
 	public :
 		Channel();
@@ -57,6 +58,8 @@ class Channel
 		std::string getKey() const;
 		void	setLimit(int limit);
 		int		getLimit() const;
+		bool	checkInvitedList(Client &client);
+		void	addInvitedList(std::string client_name);
 
 		void	showChannelMembers(Server &server);  // for Debug
 };

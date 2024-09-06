@@ -26,7 +26,6 @@ void CommandHandler::handleChannelOperatorMode(Channel &channel, Client &client,
     channel.messageToMembers(client, "MODE", mode_msg);
 }
 
-
 void CommandHandler::handleChannelMode(Channel &channel, Command const &cmd, Client &client)
 {
     std::vector<std::string> params = cmd.getParams();
@@ -53,6 +52,16 @@ void CommandHandler::handleChannelMode(Channel &channel, Command const &cmd, Cli
                 case 'o': // 채널 운영자 설정
                     handleChannelOperatorMode(channel, client, params, add);
                     break;
+                case 'i':
+                    handleChannelInviteMode(channel, client, params, add);
+		    break;
+		// case 'k':
+                //     handleChannelIKeyMode(channel, client, params, add);
+                // case 'l':
+                //     handleChannelLimitMode(channel, client, params, add);
+                // case 't':
+                //     handleChannelTopicMode(channel, client, params, add);
+=======
                 // 다른 채널 모드 처리 (예: i, k, l 등)
                 // case 'i': handleInviteOnlyMode(...);
                 // case 'k': handleKeyMode(...);

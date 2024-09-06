@@ -23,6 +23,7 @@ class CommandHandler
         void reply(int numeric, std::string param, std::string message);
         void reply(std::string const &command, std::vector<std::string> const &message);
         void reply(std::string const &command, std::string const &message);
+	void reply(Client &client, const char* numeric, const std::string &channel_name, const std::string &message);
 
         // all those commands
         void pass(Command &cmd, Client &client);
@@ -41,7 +42,9 @@ class CommandHandler
         void    handleUserMode(Client &client, Command const &cmd);
         void    handleChannelOperatorMode(Channel &channel, Client &client, std::vector<std::string> &params, bool add);
 
-        void    com001(Client const &client, std::string const &server_name);               //RPL_WELCOME 
+	void	handleChannelInviteMode(Channel &channel, Client &client, std::vector<std::string> &params, bool add);
+	void 	invite(Command &cmd, Client &client, Server &server);
+	void    com001(Client const &client, std::string const &server_name);               //RPL_WELCOME 
         void    com461(std::string const &nickname, std::string const &cmd);                //ERR_NEEDMOREPARAMS
         void    com353(Server &server, Channel const *channels);                            //RPL_NAMREPLY
         void    com366(Client const &client, std::string const &channel_name);              //RPL_ENDOFNAMES
