@@ -57,7 +57,7 @@ bool	Channel::isMember(int fd) const
 
 int	Channel::addClient(Client client)
 {
-	for (int i=0; i < (int)_fdlist.size() ; i++)
+	for (int i = 0; i < (int)_fdlist.size() ; i++)
 	{
 		if (_fdlist[i] == client.getSocket_fd())
 			return (-1);
@@ -78,21 +78,24 @@ void	Channel::removeClient(int fd)
 	}
 }
 
-std::string	Channel::getChannelMembers(Server &server) const   //chan operator 앞에 @ 붙이기 처리해야됨
+std::string	Channel::getChannelMembers(Channel const &channel, Server &server) const
 {
+	std::string members;
 
-	if (server.getClients().size() < 1)
-		return ("");
-	if (server.getClients().find(_fdlist[0]) == server.getClients().end())
-		return ("");
-	std::string ret = server.getClients().at(_fdlist[0]).getNickname() + " ";
-	for (int i = 1 ; i < (int)_fdlist.size(); i++)
+	std::map<int, Client> &clients = server.getClients();
+	std::vector<int>::const_iterator it = channel._fdlist.begin();
+	while (it != channel._fdlist.end())
 	{
-		if (server.getClients().find(_fdlist[i]) == server.getClients().end())
-			return ("");
-		ret += server.getClients().at(_fdlist[i]).getNickname() + " ";
+		if (clients.find(*it) != clients.end())
+		{
+			if (isOperator(clients.at(*it)))
+				members += "@";
+			members += clients.at(*it).getNickname();
+			members += " ";
+		}
+		it++;
 	}
-	return (ret);
+	return members;
 }
 
 void	Channel::messageToMembers(Client const &client, std::string cmd, std::string param)
@@ -132,6 +135,10 @@ void Channel::setOperator(Client &client, bool enable)
 
 bool Channel::isOperator(const Client &client) const
 {
+	if (_operators.find(client.getNickname()) == _operators.end())
+		std::cout << "not operator" << std::endl;
+	else
+		std::cout << "operator" << std::endl;
 	return _operators.find(client.getNickname()) != _operators.end();
 }
 

@@ -37,7 +37,7 @@ class Channel
 		Channel(std::string myname);
 		
 		std::string	getChannelName() const;
-		std::string	getChannelMembers(Server &server) const;
+		std::string	getChannelMembers(Channel const &channel, Server &server) const;
 		std::string	getChannelTopic() const;
 		time_t getTopicTime() const;
 

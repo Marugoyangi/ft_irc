@@ -48,7 +48,7 @@ void CommandHandler::join(Command &cmd, Client &client, Server &server)
 			((int)channels[channel_name].getFdList().size() >= channels[channel_name].getLimit())) // 채널 인원 제한
 			{
 				std::cout << "channel limit" << std::endl;
-				std::cout << channels[channel_name].getChannelMembers(server).size() << std::endl;
+				std::cout << channels[channel_name].getChannelMembers(channels[channel_name], server) << std::endl;
 				std::string tmp = client.getNickname() + " " + channel_name;
 				reply(471, tmp, "Cannot join channel (+l)");
 				continue;
@@ -70,26 +70,24 @@ void CommandHandler::join(Command &cmd, Client &client, Server &server)
 		}
 		else
 		{
+			channels.insert(std::pair<std::string, Channel>(channel_name, Channel(channel_name)));
 			if (key != "")
 			{
 				channels[channel_name].setKey(key);
 				channels[channel_name].setMode(MODE_K);
 			}
+			channels[channel_name].addClient(client);
 			channels[channel_name].setOperator(client, true); // 채널 최초 생성시 관리자 지정
-			if (channels[channel_name].addClient(client) == -1)
-				continue;
+			std::string operator_msg = ":irc.local MODE " + channel_name + " +o " + client.getNickname() + "\r\n";
+			send(client.getSocket_fd(), operator_msg.c_str(), operator_msg.length(), 0);
 		}
 		if (channels.find(channel_name) != channels.end() && channels[channel_name].getChannelTopic() != "")
 			com332(client, channels[channel_name]);
-		if (channels[channel_name].isOperator(client))
-		{
-			std::string operator_msg = ":" + client.getNickname() + " MODE " + channel_name + " +o " + client.getNickname() + "\r\n";
-			send(client.getSocket_fd(), operator_msg.c_str(), operator_msg.length(), 0);
-		}
 		_reply += client.getSource() + " JOIN :" + channel_name + "\r\n";
 		com353(server, channels[channel_name]);
 		com366(client, channel_name);
 		channels[channel_name].messageToMembers(client, "JOIN", channel_name);
+		std::cout << "isOperator: " << channels[channel_name].isOperator(client) << std::endl;
 	}
 	return;
 }
