@@ -93,8 +93,10 @@ void CommandHandler::topic(Command const &cmd, Client const &client, Server &ser
         }
         else
         {
-            // RPL_TOPIC
-            _reply += ":localhost 332 " + client.getNickname() + " " + channel_name + " :" + channel.getChannelTopic() + "\r\n";
+            if (channel.getChannelTopic().size() >= 390)
+                _reply += ":localhost 332 " + client.getNickname() + " " + channel_name + " :" + channel.getChannelTopic().substr(0, 390) + "\r\n";
+            else
+                _reply += ":localhost 332 " + client.getNickname() + " " + channel_name + " :" + channel.getChannelTopic() + "\r\n";
         }
     }
     else
