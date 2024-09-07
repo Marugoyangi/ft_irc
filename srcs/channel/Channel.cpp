@@ -90,8 +90,11 @@ std::string	Channel::getChannelMembers(Channel const &channel, Server &server) c
 		{
 			if (isOperator(clients.at(*it)))
 				members += "@";
+			else
+				members += "+";
 			members += clients.at(*it).getNickname();
-			members += " ";
+			if (it + 1 != channel._fdlist.end())
+				members += " ";
 		}
 		it++;
 	}

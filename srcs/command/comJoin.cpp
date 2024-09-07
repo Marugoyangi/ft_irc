@@ -87,7 +87,6 @@ void CommandHandler::join(Command &cmd, Client &client, Server &server)
 		com353(server, channels[channel_name]);
 		com366(client, channel_name);
 		channels[channel_name].messageToMembers(client, "JOIN", channel_name);
-		std::cout << "isOperator: " << channels[channel_name].isOperator(client) << std::endl;
 	}
 	return;
 }
