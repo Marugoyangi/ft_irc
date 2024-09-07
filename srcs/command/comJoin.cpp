@@ -70,19 +70,22 @@ void CommandHandler::join(Command &cmd, Client &client, Server &server)
 		}
 		else
 		{
-			Channel	tem(channel_name);
 			if (key != "")
 			{
-				tem.setKey(key);
-				tem.setMode(MODE_K); // channel key required for entry
+				channels[channel_name].setKey(key);
+				channels[channel_name].setMode(MODE_K);
 			}
-			channels.insert(std::make_pair(channel_name, tem)); // 채널 새로 만듦
-			tem.setOperator(client, true); // 채널 최초 생성시 관리자 지정
+			channels[channel_name].setOperator(client, true); // 채널 최초 생성시 관리자 지정
 			if (channels[channel_name].addClient(client) == -1)
 				continue;
 		}
 		if (channels.find(channel_name) != channels.end() && channels[channel_name].getChannelTopic() != "")
 			com332(client, channels[channel_name]);
+		if (channels[channel_name].isOperator(client))
+		{
+			std::string operator_msg = ":" + client.getNickname() + " MODE " + channel_name + " +o " + client.getNickname() + "\r\n";
+			send(client.getSocket_fd(), operator_msg.c_str(), operator_msg.length(), 0);
+		}
 		_reply += client.getSource() + " JOIN :" + channel_name + "\r\n";
 		com353(server, channels[channel_name]);
 		com366(client, channel_name);

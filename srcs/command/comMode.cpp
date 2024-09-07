@@ -2,25 +2,56 @@
 
 void CommandHandler::handleChannelOperatorMode(Channel &channel, Client &client, std::vector<std::string> &params, bool add)
 {
+    std::string channel_name;
+    std::string client_name;
+
     if (params.size() < 3)
     {
         // ERR_NEEDMOREPARAMS
         _reply += ":irc.local 461 " + client.getNickname() + " MODE :Not enough parameters\r\n";
         return;
     }
-    std::string target_nick = params[2];
-    Client *target_client = channel.getClient(target_nick);
-    if (!target_client)
+    client_name = params[2];
+    channel_name = params[0];
+
+    //채널 관리자만 invite
+    if (!channel.isOperator(client))
     {
-        // ERR_USERNOTINCHANNEL
-        _reply += ":irc.local 441 " + client.getNickname() + " " + target_nick + " " + channel.getChannelName() + " :They aren't on that channel\r\n";
+        reply(client, "482", channel_name, "You're not channel operator");
         return;
     }
-    channel.setOperator(*target_client, add);
+
+    // 초대할 사용자 확인
+    std::map<int, Client> &temp = client.getServer()->getClients();
+    bool nick_found = false;
+    std::map<int, Client>::iterator it;
+    for (it = temp.begin(); it != temp.end(); it++)
+    {
+        if (it->second.getNickname() == client_name)
+        {
+            nick_found = true;
+            break;
+        }
+    }
+    if (!nick_found)
+    {
+        reply(client, "401", client_name, "No such nick");
+        return;
+    }
+
+    // 사용자가 채널에 있는지 확인
+    if (!channel.isMember(it->first))
+    {
+        reply(client, "441", client_name, "User not on channel");
+        return;
+    }
+    channel.setOperator(it->second, add);
     // 모드 변경 메시지
     std::string mode_str = add ? "+o" : "-o";
-    std::string mode_msg = ":" + client.getNickname() + " MODE " + channel.getChannelName() + " " + mode_str + " " + target_nick + "\r\n";
-    channel.messageToMembers(client, "MODE", mode_msg);
+    std::string operator_msg = ":" + client.getNickname() + " MODE " + channel.getChannelName() + \
+    " " + mode_str + " " + client_name + "\r\n";
+    send(client.getSocket_fd(), operator_msg.c_str(), operator_msg.length(), 0);
+    channel.messageToMembers(client, "MODE " + channel.getChannelName() + " " + mode_str + " " + client_name, "");
 }
 
 void CommandHandler::handleChannelMode(Channel &channel, Command const &cmd, Client &client)
@@ -30,6 +61,13 @@ void CommandHandler::handleChannelMode(Channel &channel, Command const &cmd, Cli
     {
         // ERR_NEEDMOREPARAMS
         _reply += ":irc.local 461 " + client.getNickname() + " MODE :Not enough parameters\r\n";
+        return;
+    }
+
+    if (!channel.isOperator(client))
+    {
+        // ERR_CHANOPRIVSNEEDED
+        _reply += ":irc.local 482 " + client.getNickname() + " " + channel.getChannelName() + " :You're not channel operator\r\n";
         return;
     }
 
