@@ -182,7 +182,7 @@ void CommandHandler::pass(Command &cmd, Client &client)
 {
     if (client.getIs_passed() == true)
     {
-        reply(462, "", "You may not reregister");
+        reply(462, "PASS", "You may not reregister");
         return;
     }
     if (cmd.getParams().size() == 0)
@@ -201,26 +201,27 @@ void CommandHandler::nick(Command &cmd, Client &client)
             client.setIs_passed(true);
         else
         {
-            reply(464, "","Password incorrect");
+            reply(464, "NICK","Password incorrect");
             return;
         }
     }
     if (cmd.getParams().size() == 0)
     {
-        reply(431, "", "No nickname given");
+        reply(431, "NICK", "No nickname given");
         return;
     }
     if (cmd.getParams()[0].size() > 9 || cmd.getParams()[0].size() < 1 || 
         cmd.getParams()[0].find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_") != std::string::npos)
     {
-        reply(432, "", "Erroneous nickname");
+        reply(432, "NICK", "Erroneous nickname");
         return;
     }
     std::string nickname = cmd.getParams()[0];
     std::set<std::string> nicknames = client.getServer()->getNicknames();
     if (nicknames.find(nickname) != nicknames.end())
     {
-        reply(433, nickname, "Nickname is already in use");
+        std::string tmp = "NICK " + nickname;
+        reply(433, tmp, "Nickname is already in use");
         return;
     }
     std::string str = cmd.getParams()[0];
@@ -237,7 +238,7 @@ void CommandHandler::user(Command &cmd, Client &client)
             client.setIs_passed(true);
         else
         {
-            reply(464, "","Password incorrect");
+            reply(464, "USER","Password incorrect");
             return;
         }
     }
@@ -250,7 +251,7 @@ void CommandHandler::user(Command &cmd, Client &client)
     }
     if (client.getNickname() == "") // Nickname not set
     {
-        reply(462, "", "You may not reregister");
+        reply(462, "USER", "You may not reregister");
         return;
     }
     // // 암호와 인자 유효한 경우엔 Ident 프로토콜 실행
@@ -259,19 +260,13 @@ void CommandHandler::user(Command &cmd, Client &client)
     struct sockaddr_in peer_addr;
     socklen_t peer_addr_len = sizeof(peer_addr);
     if (getpeername(client.getSocket_fd(), (struct sockaddr *)&peer_addr, &peer_addr_len) == -1)
-    {
-        die("getpeername");
         return;
-    }
     char client_port[6];
     snprintf(client_port, 6, "%d", ntohs(peer_addr.sin_port));
     ident_server = client.getServer()->getPort() + "," + client_port;
     ssize_t sent = send(client.getSocket_fd(), ident_server.c_str(), ident_server.length(), 0);
     if (sent == -1)
-    {
-        die("send");
         return;
-    }
     time_t start = time(NULL);
     while(1)
     {
@@ -329,7 +324,7 @@ void CommandHandler::welcome(Client &client)
     reply(003, client_name, "This server was created " + std::string(buffer));
     reply(004, client_name, server_name + " 1.0 " + "o " + "itkol");
     std::stringstream modes;
-    modes << "CASEMAPPING=rfc1459 CHARSET=ascii NICKLEN=9 CHANNELLEN=50 TOPICLEN=390 " << "CHANTYPES=# PREFIX=(o)@ MODES=4 NETWORK=" << server_name << " MAXTARGETS=" << MAX_TARGETS << " :are supported by this server";
+    modes << "CASEMAPPING=rfc1459 CHARSET=ascii NICKLEN=9 TOPICLEN=390 " << "CHANTYPES=# PREFIX=(o)@ MODES=4 NETWORK=" << server_name << " MAXTARGETS=" << MAX_TARGETS << " :are supported by this server";
     reply(005, client_name, modes.str());
 
     //need fix///////////////////////////////

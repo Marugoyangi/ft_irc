@@ -9,7 +9,6 @@ SRCS = ./srcs/main.cpp\
 	   ./srcs/command/comPart.cpp\
 	   ./srcs/command/comNames.cpp\
 	   ./srcs/command/comJoin.cpp\
-	   ./srcs/command/comTopic.cpp\
 	   ./srcs/command/comPrivmsg.cpp\
 	   ./srcs/command/comMode.cpp\
 	   ./srcs/command/comModeAdd.cpp\

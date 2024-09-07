@@ -167,15 +167,18 @@ void Server::setupEpoll()
                 if (bytes_received < 0)
                 {
                     if (errno == EAGAIN || errno == EWOULDBLOCK)
-                        printf("Client timeout\n");
+                    {
+                        std::cout << "recv timeout" << std::endl;
+                        continue ;
+                    }
                     else
                         perror("recv");
                     epoll_ctl(_event_fd, EPOLL_CTL_DEL, client, NULL);
-                       close(client);
+                    close(client);
                     std::map<int, Client>::iterator it = _clients.find(client);
-                    if (it != _clients.end()) {
+                    if (it != _clients.end()) 
                         _clients.erase(it);
-                    }
+                    std::cout << "client disconnected" << std::endl;
                 }
                 else if (bytes_received == 0)
                 {
