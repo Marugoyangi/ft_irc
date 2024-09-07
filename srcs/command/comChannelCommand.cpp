@@ -4,7 +4,7 @@ void CommandHandler::invite(Command &cmd, Client &client, Server &server)
 {
     std::string channel_name;
     std::string client_name;
-    std::map<std::string, Channel*> &channels = server.getChannels();
+    std::map<std::string, Channel> &channels = server.getChannels();
 
     std::vector<std::string> _tem = cmd.getParams();
     if (_tem.size() < 2)
@@ -22,10 +22,10 @@ void CommandHandler::invite(Command &cmd, Client &client, Server &server)
         return;
     }
 
-    Channel *channel = channels[channel_name];
+    Channel &channel = channels[channel_name];
 
     //채널 관리자만 invite
-    if (!channel->isOperator(client))
+    if (!channel.isOperator(client))
     {
         reply(client, "482", channel_name, "You're not channel operator");
         return;
@@ -50,14 +50,14 @@ void CommandHandler::invite(Command &cmd, Client &client, Server &server)
     }
 
     // 사용자가 이미 채널에 있는지 확인
-    if (channel->isMember(it->first))
+    if (channel.isMember(it->first))
     {
         reply(client, "443", client_name, "User already on channel");
         return;
     }
 
     // 초대 처리
-    channel->addInvitedList(client_name);
+    channel.addInvitedList(client_name);
     std::string invite_msg = ":" + client.getNickname() + " INVITE " + client_name + " " + channel_name + "\r\n";
     send(it->first, invite_msg.c_str(), invite_msg.length(), 0);
     _reply += ":irc.local 341 " + client.getNickname() + " " + client_name + " " + channel_name + "\r\n";
@@ -74,7 +74,7 @@ void CommandHandler::topic(Command const &cmd, Client const &client, Server &ser
     }
 
     std::string channel_name = params[0];
-    std::map<std::string, Channel*> &channels = server.getChannels();
+    std::map<std::string, Channel> &channels = server.getChannels();
     if (channels.find(channel_name) == channels.end())
     {
         // ERR_NOSUCHCHANNEL
@@ -82,7 +82,7 @@ void CommandHandler::topic(Command const &cmd, Client const &client, Server &ser
         return;
     }
     std::cout << "channel_name: " << channel_name << std::endl;
-    Channel &channel = *channels[channel_name];
+    Channel &channel = channels[channel_name];
     if (params.size() == 1)
     {
         // 채널 토픽을 요청
@@ -123,16 +123,16 @@ void CommandHandler::topic(Command const &cmd, Client const &client, Server &ser
     }
 }
 
-void CommandHandler::com332(Client const &client, Channel const *channel)
+void CommandHandler::com332(Client const &client, Channel const channel)
 {
-    if (channel->getChannelTopic() == "")
-        reply(331, channel->getChannelName(), "No topic is set");
+    if (channel.getChannelTopic() == "")
+        reply(331, channel.getChannelName(), "No topic is set");
     else
     {
         std::stringstream ss;
 
-        ss << channel->getTopicTime();
-        _reply += ":irc.local 332 " + client.getNickname() + " " + channel->getChannelName() + " :" + channel->getChannelTopic() + "\r\n";
-        _reply += ":irc.local 333 " + client.getNickname() + " " + channel->getChannelName() + " " + client.getSource() + " :" + ss.str() + "\r\n";
+        ss << channel.getTopicTime();
+        _reply += ":irc.local 332 " + client.getNickname() + " " + channel.getChannelName() + " :" + channel.getChannelTopic() + "\r\n";
+        _reply += ":irc.local 333 " + client.getNickname() + " " + channel.getChannelName() + " " + client.getSource() + " :" + ss.str() + "\r\n";
     }
 }

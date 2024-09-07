@@ -122,10 +122,10 @@ void CommandHandler::mode(Command const &cmd, Client &client, Server &server)
     if (target[0] == '#')
     {
         // 채널 모드 처리
-        std::map<std::string, Channel*> &channels = server.getChannels();
+        std::map<std::string, Channel> &channels = server.getChannels();
         if (channels.find(target) != channels.end())
         {
-            Channel &channel = *channels[target];
+            Channel &channel = channels[target];
             handleChannelMode(channel, cmd, client);
         }
         else

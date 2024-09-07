@@ -8,7 +8,7 @@ void CommandHandler::join(Command &cmd, Client &client, Server &server)
 	size_t comma_pos = 0;
 	size_t key_pos = 0;
 	std::vector<std::string> _tem;
-	std::map<std::string, Channel*> &channels = server.getChannels();
+	std::map<std::string, Channel> &channels = server.getChannels();
 
 	_tem = cmd.getParams();
 	if (_tem.size() < 1)
@@ -44,49 +44,49 @@ void CommandHandler::join(Command &cmd, Client &client, Server &server)
 			}
 		if (channels.find(channel_name) != channels.end()) // 기존에 있는 채널일 때
 		{
-			if (channels[channel_name]->isMode(MODE_L) && \
-			((int)channels[channel_name]->getFdList().size() >= channels[channel_name]->getLimit())) // 채널 인원 제한
+			if (channels[channel_name].isMode(MODE_L) && \
+			((int)channels[channel_name].getFdList().size() >= channels[channel_name].getLimit())) // 채널 인원 제한
 			{
 				std::cout << "channel limit" << std::endl;
-				std::cout << channels[channel_name]->getChannelMembers(server).size() << std::endl;
+				std::cout << channels[channel_name].getChannelMembers(server).size() << std::endl;
 				std::string tmp = client.getNickname() + " " + channel_name;
 				reply(471, tmp, "Cannot join channel (+l)");
 				continue;
 			}
-			else if (channels[channel_name]->isMode(MODE_I) && !channels[channel_name]->checkInvitedList(client)) // 초대만 가능한 채널
+			else if (channels[channel_name].isMode(MODE_I) && !channels[channel_name].checkInvitedList(client)) // 초대만 가능한 채널
 			{
 				std::string tmp = client.getNickname() + " " + channel_name;
 				reply(473, tmp, "Cannot join channel (+i)");
 				continue;
 			}
-			else if (channels[channel_name]->isMode(MODE_K) && channels[channel_name]->getKey() != key) // 암호 확인
+			else if (channels[channel_name].isMode(MODE_K) && channels[channel_name].getKey() != key) // 암호 확인
 			{
 				std::string tmp = client.getNickname() + " " + channel_name;
 				reply(475, tmp,"Cannot join channel (+k)");
 				continue;
 			}
-			if (channels[channel_name]->addClient(client) == -1)
+			if (channels[channel_name].addClient(client) == -1)
 				continue;
 		}
 		else
 		{
-			Channel	*tem = new Channel(channel_name);
+			Channel	tem(channel_name);
 			if (key != "")
 			{
-				tem->setKey(key);
-				tem->setMode(MODE_K); // channel key required for entry
+				tem.setKey(key);
+				tem.setMode(MODE_K); // channel key required for entry
 			}
 			channels.insert(std::make_pair(channel_name, tem)); // 채널 새로 만듦
-			tem->setOperator(client, true); // 채널 최초 생성시 관리자 지정
-			if (channels[channel_name]->addClient(client) == -1)
+			tem.setOperator(client, true); // 채널 최초 생성시 관리자 지정
+			if (channels[channel_name].addClient(client) == -1)
 				continue;
 		}
-		if (channels.find(channel_name) != channels.end() && channels[channel_name]->getChannelTopic() != "")
+		if (channels.find(channel_name) != channels.end() && channels[channel_name].getChannelTopic() != "")
 			com332(client, channels[channel_name]);
 		_reply += client.getSource() + " JOIN :" + channel_name + "\r\n";
 		com353(server, channels[channel_name]);
 		com366(client, channel_name);
-		channels[channel_name]->messageToMembers(client, "JOIN", channel_name);
+		channels[channel_name].messageToMembers(client, "JOIN", channel_name);
 	}
 	return;
 }

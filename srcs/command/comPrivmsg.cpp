@@ -37,10 +37,10 @@ void CommandHandler::privmsg(Command const &cmd, Client const &client, Server &s
         if (target[0] == '#')
         {
             // 채널 메시지 처리
-            std::map<std::string, Channel*> &channels = server.getChannels();
+            std::map<std::string, Channel> &channels = server.getChannels();
             if (channels.find(target) != channels.end())
             {
-                Channel &channel = *channels[target];
+                Channel &channel = channels[target];
                 channel.messageToMembers(client, "PRIVMSG " + target, message + "\r\n");
             }
             else

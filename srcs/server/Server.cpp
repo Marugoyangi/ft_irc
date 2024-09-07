@@ -31,7 +31,7 @@ std::map<int, Client> &Server::getClients()
     return _clients;
 }
 
-std::map<std::string, Channel*> &Server::getChannels()
+std::map<std::string, Channel> &Server::getChannels()
 {
     return _channels;
 }
