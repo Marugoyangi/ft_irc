@@ -392,9 +392,9 @@ void Server::setupKqueue()
                         // cmd.showCommand();
                         tmp_client.execCommand(cmd, *this);
 
-						for(std::map<std::string, Channel*>::iterator iter = _channels.begin() ; iter != _channels.end(); iter++)
+						for(std::map<std::string, Channel>::iterator iter = _channels.begin() ; iter != _channels.end(); iter++)
 						{
-							iter->second->showChannelMembers(*this);
+							iter->second.showChannelMembers(*this);
 						}
                         // ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
                         // printf("Sent %ld bytes\n", sent_bytes);
