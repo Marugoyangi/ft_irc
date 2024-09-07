@@ -95,3 +95,8 @@
       <filesize>148</filesize>
       <tcpflow startime='2024-09-07T05:41:49.018779Z' endtime='2024-09-07T05:41:49.067223Z' family='2' src_ipn='127.0.0.1' dst_ipn='127.0.0.1' srcport='58070' dstport='10007' packets='10' len='804' />
     </fileobject>
+    <fileobject>
+      <filename>127.000.000.001.47882-127.000.000.001.10007</filename>
+      <filesize>148</filesize>
+      <tcpflow startime='2024-09-07T05:59:08.560376Z' endtime='2024-09-07T05:59:08.614562Z' family='2' src_ipn='127.0.0.1' dst_ipn='127.0.0.1' srcport='47882' dstport='10007' packets='10' len='804' />
+    </fileobject>

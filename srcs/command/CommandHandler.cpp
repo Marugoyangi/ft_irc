@@ -326,20 +326,28 @@ void CommandHandler::welcome(Client &client)
     std::stringstream modes;
     modes << "CASEMAPPING=rfc1459 CHARSET=ascii NICKLEN=9 TOPICLEN=390 " << "CHANTYPES=# PREFIX=(o)@ MODES=4 NETWORK=" << server_name << " MAXTARGETS=" << MAX_TARGETS << " :are supported by this server";
     reply(005, client_name, modes.str());
-
-    //need fix///////////////////////////////
     std::stringstream ss;
-    ss << "There are " << client.getServer()->getClients().size() << " clients, 0 services and 1 servers";
+    ss << "There are " << client.getServer()->getClients().size() << " clients, 1 services and 1 servers"; // bot service
     reply(251, client_name, ss.str());
-    // 관리자, 미인증
-    reply(252, client_name, "0 :operator(s) online"); // need fix
-    reply(253, client_name, "0 :unknown connection(s)");
+    reply(252, client_name, "0 :operator(s) online");
+    int unknown = 0;
+    for (std::map<int, Client>::iterator it = client.getServer()->getClients().begin(); it != client.getServer()->getClients().end(); it++)
+    {
+        if (it->second.getIs_registered() == false)
+            unknown++;
+    }
+    std::stringstream ss2;
+    if (unknown == 0)
+        ss2 << "0 :unknown connection(s)";
+    else
+        ss2 << unknown << " :unknown connection(s)";
+    reply(253, client_name, ss2.str());
     ////////////////////////////////////////
     ss.str("");
     ss << client.getServer()->getChannels().size() << " :channels formed";
     reply(254, client_name, ss.str());
     ss.str("");
-    ss << client.getServer()->getClients().size() << " :clients and 1 servers";
+    ss << client.getServer()->getClients().size() << " :clients and 1 server";
     reply(255, client_name, ss.str());
     ss.str("");
     ss << client.getServer()->getClients().size() << " :Current local users " \
