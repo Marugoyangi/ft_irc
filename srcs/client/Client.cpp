@@ -24,6 +24,7 @@ Client &Client::operator=(const Client &other)
     _ip = other._ip;
     _password = other._password;
     _socket_fd = other._socket_fd;
+    disconnect_message = other.disconnect_message;
     return (*this);
 }
 
@@ -42,6 +43,7 @@ Client::Client(int fd, std::string password, Server *server)
     _password = password;
     _try_password = "";
     _socket_fd = fd;
+    disconnect_message = "Connection closed";
 }
 
 void Client::execCommand(Command &cmd, Server &server)
@@ -121,6 +123,16 @@ void Client::setEstablished_time(time_t established_time)
 void Client::setLast_active_time(time_t last_active_time)
 {
     _last_active_time = last_active_time;
+}
+
+void    Client::setDisconnectMessage(std::string message)
+{
+    disconnect_message = message;
+}
+
+std::string Client::getDisconnectMessage() const
+{
+    return disconnect_message;
 }
 
 std::string Client::getNickname() const

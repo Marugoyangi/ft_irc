@@ -4,7 +4,10 @@ Channel::Channel() {}
 
 Channel::Channel(std::string myname) : _channel_name(myname), _topic(""), _topic_time(0), _mode(0), _key(""), _limit(-1){}
 
-Channel::~Channel() {}
+Channel::~Channel() 
+{
+	std::cout << "\033[32mChannel Destroyed \033[0m" << std::endl;  //Debug
+}
 
 Channel::Channel(const Channel &other)
 {

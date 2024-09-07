@@ -81,6 +81,8 @@ public:
     std::string                     getPort();
     std::string                     getServerName();
     time_t                          getLocalTime();
+
+    void    cleanChans();
 };
 
 #endif
