@@ -227,23 +227,10 @@ void Server::setupEpoll()
                         std::string message = data.substr(0, pos);
                         printf("Received message: %s\n", message.c_str());
                         // Process the message ////////////////////////////////
-                        ///////////////////////////////////////////////////////
                         cmd.clearCommand();
                         cmd.parseCommand(message);
                         cmd.showCommand();
                         tmp_client.execCommand(cmd, *this);
-                        // ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
-                        // printf("Sent %ld bytes\n", sent_bytes);
-                        // if (sent_bytes < 0)
-                        // {
-                        //     perror("send");
-                        // }
-                        // else if (sent_bytes != static_cast<ssize_t>(message.size()))
-                        // {
-                        //     fprintf(stderr, "Warning: Not all data was sent.\n");
-                        // }
-                        // end of processing //////////////////////////////////
-                        ///////////////////////////////////////////////////////
                         data.erase(0, pos + (data[pos] == '\r' ? 2 : 1));  // Remove the processed message
                     }
                     // Remaining data is saved in leftover
