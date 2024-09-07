@@ -122,6 +122,7 @@ void CommandHandler::execute(Command &cmd, Client &client, Server &server)
         }
     }
     // client.showClient();
+    client.setLast_active_time(time(NULL));
 	std::cout << "\033[01m\033[33mmessage to client " << client.getSocket_fd() << ": "  << _reply << "\033[0m" << std::endl;
     send(client.getSocket_fd(), _reply.c_str(), _reply.length(), 0);
 }

@@ -64,6 +64,24 @@ time_t Server::getLocalTime()
     return mktime(_time_local);
 }
 
+void Server::pingClients()
+{
+    if (_clients.empty())
+        return;
+    std::map<int, Client>::iterator it;
+    for (it = _clients.begin(); it != _clients.end(); ++it)
+    {
+        std::string ping_msg = ":" + _server_name + " PING " + it->second.getNickname() + "\r\n";
+        send(it->first, ping_msg.c_str(), ping_msg.length(), 0);
+        if (time(NULL) - it->second.getLast_active_time() > 15)
+        {
+            std::cout << "Client " << it->second.getNickname() << " has timed out" << std::endl;
+            close(it->first);
+            _clients.erase(it);
+        }
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Member Functions ////////////////////////////////////////////////////////////
 void Server::setupSocket()
@@ -120,6 +138,7 @@ void Server::setupEpoll()
     {
         die("epoll_ctl: listen_sock");
     }
+    time_t last_ping_time = time(NULL); // 마지막 핑 타임 설정
     while (g_shutdown == false)
     {
         int n = epoll_wait(_event_fd, events, MAX_EVENTS, -1);
@@ -205,10 +224,8 @@ void Server::setupEpoll()
                         continue; // 이게 가능한 얘긴가?
                     while ((pos = data.find("\r\n")) != std::string::npos || (pos = data.find("\n")) != std::string::npos)
                     {
-                        
                         std::string message = data.substr(0, pos);
                         printf("Received message: %s\n", message.c_str());
-
                         // Process the message ////////////////////////////////
                         ///////////////////////////////////////////////////////
                         cmd.clearCommand();
@@ -233,6 +250,12 @@ void Server::setupEpoll()
                     leftover = data;
                 }
             }
+        }
+        time_t current_time = time(NULL);
+        if (difftime(current_time, last_ping_time) >= 20)
+        {
+            pingClients();
+            last_ping_time = current_time; // 마지막 핑 시간 갱신
         }
     }
     stopEpoll(); // Clean up
