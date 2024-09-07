@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <cerrno>
 #include <sstream>
+#include <iterator>
 #include "../command/Command.hpp"
 #include "../command/CommandHandler.hpp"
 #include "../client/Client.hpp"
@@ -83,6 +84,7 @@ public:
     time_t                          getLocalTime();
 
     void    cleanChans();
+    void                            pingClients();
 };
 
 #endif

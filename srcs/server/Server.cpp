@@ -64,6 +64,24 @@ time_t Server::getLocalTime()
     return mktime(_time_local);
 }
 
+void Server::pingClients()
+{
+    if (_clients.empty())
+        return;
+    std::map<int, Client>::iterator it;
+    for (it = _clients.begin(); it != _clients.end(); ++it)
+    {
+        std::string ping_msg = ":" + _server_name + " PING " + it->second.getNickname() + "\r\n";
+        send(it->first, ping_msg.c_str(), ping_msg.length(), 0);
+        if (time(NULL) - it->second.getLast_active_time() > 15)
+        {
+            std::cout << "Client " << it->second.getNickname() << " has timed out" << std::endl;
+            close(it->first);
+            _clients.erase(it);
+        }
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Member Functions ////////////////////////////////////////////////////////////
 void Server::setupSocket()
@@ -120,6 +138,7 @@ void Server::setupEpoll()
     {
         die("epoll_ctl: listen_sock");
     }
+    time_t last_ping_time = time(NULL); // 마지막 핑 타임 설정
     while (g_shutdown == false)
     {
         int n = epoll_wait(_event_fd, events, MAX_EVENTS, -1);
@@ -167,15 +186,18 @@ void Server::setupEpoll()
                 if (bytes_received < 0)
                 {
                     if (errno == EAGAIN || errno == EWOULDBLOCK)
-                        printf("Client timeout\n");
+                    {
+                        std::cout << "recv timeout" << std::endl;
+                        continue ;
+                    }
                     else
                         perror("recv");
                     epoll_ctl(_event_fd, EPOLL_CTL_DEL, client, NULL);
-                       close(client);
+                    close(client);
                     std::map<int, Client>::iterator it = _clients.find(client);
-                    if (it != _clients.end()) {
+                    if (it != _clients.end()) 
                         _clients.erase(it);
-                    }
+                    std::cout << "client disconnected" << std::endl;
                 }
                 else if (bytes_received == 0)
                 {
@@ -202,34 +224,25 @@ void Server::setupEpoll()
                         continue; // 이게 가능한 얘긴가?
                     while ((pos = data.find("\r\n")) != std::string::npos || (pos = data.find("\n")) != std::string::npos)
                     {
-                        
                         std::string message = data.substr(0, pos);
                         printf("Received message: %s\n", message.c_str());
-
                         // Process the message ////////////////////////////////
-                        ///////////////////////////////////////////////////////
                         cmd.clearCommand();
                         cmd.parseCommand(message);
                         cmd.showCommand();
                         tmp_client.execCommand(cmd, *this);
-                        // ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
-                        // printf("Sent %ld bytes\n", sent_bytes);
-                        // if (sent_bytes < 0)
-                        // {
-                        //     perror("send");
-                        // }
-                        // else if (sent_bytes != static_cast<ssize_t>(message.size()))
-                        // {
-                        //     fprintf(stderr, "Warning: Not all data was sent.\n");
-                        // }
-                        // end of processing //////////////////////////////////
-                        ///////////////////////////////////////////////////////
                         data.erase(0, pos + (data[pos] == '\r' ? 2 : 1));  // Remove the processed message
                     }
                     // Remaining data is saved in leftover
                     leftover = data;
                 }
             }
+        }
+        time_t current_time = time(NULL);
+        if (difftime(current_time, last_ping_time) >= 20)
+        {
+            pingClients();
+            last_ping_time = current_time; // 마지막 핑 시간 갱신
         }
     }
     stopEpoll(); // Clean up
@@ -386,7 +399,6 @@ void Server::setupKqueue()
                         cmd.parseCommand(message);
                         // cmd.showCommand();
                         tmp_client.execCommand(cmd, *this);
-
 
 						for(std::map<std::string, Channel>::iterator iter = _channels.begin() ; iter != _channels.end(); iter++)
 						{
