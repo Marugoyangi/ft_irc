@@ -21,27 +21,34 @@ void CommandHandler::join(Command &cmd, Client &client, Server &server)
 		if ((comma_pos = _tem[0].find(',')) != std::string::npos)
 		{
 			channel_name = _tem[0].substr(0, comma_pos);
-			_tem[0].erase(1, comma_pos + 1);
+			_tem[0].erase(0, comma_pos + 1);
 		}
 		else
 		{
 			channel_name = _tem[0];
 			_tem[0] = "";
 		}
+
 		if (channel_name[0] != '#')
 		{
 			reply(476, client.getNickname(), std::string(channel_name + "Invalid channel name"));
-			return;
+			continue;
 		}
-		if (_tem.size() > 1)
+
+		if (_tem.size() > 1 && _tem[1].length() > 0)
+		{
+			if ((key_pos = _tem[1].find(',')) != std::string::npos)
 			{
-				key_pos = _tem[1].find(',');
-				if (key_pos > 0)
-				{
-					key = _tem[1].substr(0, key_pos); // 
-					_tem[1].erase(0, key_pos + 1); //
-				}
+				key = _tem[1].substr(0, key_pos);
+				_tem[1].erase(0, key_pos + 1);
 			}
+			else
+			{
+				key = _tem[1];
+				_tem[1] = "";
+			}
+		}
+
 		if (channels.find(channel_name) != channels.end()) // 기존에 있는 채널일 때
 		{
 			if (channels[channel_name].isMode(MODE_L) && \

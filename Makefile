@@ -13,7 +13,8 @@ SRCS = ./srcs/main.cpp\
 	   ./srcs/command/comMode.cpp\
 	   ./srcs/command/comModeAdd.cpp\
 	   ./srcs/command/comChannelCommand.cpp\
-	   ./srcs/command/comQuit.cpp
+	   ./srcs/command/comQuit.cpp\
+	   ./srcs/command/comKick.cpp
 OBJS = $(SRCS:.cpp=.o)
 C++ = c++
 FLAGS = -Wall -Wextra -Werror -std=c++98 -I. -g3

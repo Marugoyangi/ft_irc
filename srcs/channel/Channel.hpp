@@ -49,6 +49,7 @@ class Channel
 		void 	setOperator(Client &client, bool enable);
     	bool 	isOperator(const Client &client) const;
     	void 	messageToMembers(Client const &client, std::string cmd, std::string param);
+		void	messageToMembersIncludeSelf(Client const &client, std::string cmd, std::string param);
 		Client* getClient(const std::string &nickname);
 
 		void	setMode(int mode);

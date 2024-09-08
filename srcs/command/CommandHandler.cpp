@@ -83,7 +83,8 @@ void CommandHandler::execute(Command &cmd, Client &client, Server &server)
         }
         else if (command == "KICK")
         {
-            // KICK command
+            kick(cmd, client, server);
+            server.cleanChans();
         }
         else if (command == "PRIVMSG")
         {

@@ -33,6 +33,7 @@ class CommandHandler
 
 		void	join(Command &cmd, Client &client, Server &server);
         void    part(Command &cmd, Client &client, std::map<std::string, Channel> &channels);
+        void    kick(Command &cmd, Client &client, Server &server);
         void    quit(Command &cmd, Client &client, std::map<std::string, Channel> &channels);
         void	names(Command const &cmd, Client const &client, Server &server);
 		void	privmsg(Command const &cmd, Client const &client, Server &server);

@@ -119,6 +119,19 @@ void	Channel::messageToMembers(Client const &client, std::string cmd, std::strin
 	}
 }
 
+void	Channel::messageToMembersIncludeSelf(Client const &client, std::string cmd, std::string param)
+{
+	std::string msg;
+
+	msg = client.getSource() + " " + cmd + " :" + param + "\r\n";
+	for (int i = 0 ; i < (int)_fdlist.size(); i++)
+	{
+		std::cout << "\033[01m\033[33mmessage to client " << _fdlist[i] << ": "  << msg << "\033[0m" << std::endl; // debug
+		if (isMember(_fdlist[i]))
+			send(_fdlist[i], msg.c_str(), msg.length(), 0);
+	}
+}
+
 void	Channel::showChannelMembers(Server &server)  // for Debug
 {
 	std::cout << _channel_name << ": ";
