@@ -13,7 +13,7 @@ void CommandHandler::join(Command &cmd, Client &client, Server &server)
 	_tem = cmd.getParams();
 	if (_tem.size() < 1)
 	{
-		com461(client.getNickname(), "JOIN");
+		_reply += ":irc.local 461 " + client.getNickname() + " JOIN : Not enough parameters\r\n";
 		return;
 	}
 	while (_tem[0].length() > 0)
@@ -28,10 +28,9 @@ void CommandHandler::join(Command &cmd, Client &client, Server &server)
 			channel_name = _tem[0];
 			_tem[0] = "";
 		}
-
 		if (channel_name[0] != '#')
 		{
-			reply(476, client.getNickname(), std::string(channel_name + "Invalid channel name"));
+			_reply += ":irc.local 476 " + client.getNickname() + " " + channel_name + " :Invalid channel name\r\n";
 			continue;
 		}
 

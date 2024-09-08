@@ -12,35 +12,29 @@ void	CommandHandler::kick(Command &cmd, Client &client, Server &server)
 	std::map<int, Client> &clients = server.getClients();
 	std::map<int, Client>::iterator it;
 
+	if (tem.size() < 2)
+	{
+		_reply += ":irc.local 461 " + client.getNickname() + " KICK : Not enough parameters\r\n";
+		return ; 
+	}
 	if (tem.size() > 2)
 		message = tem[2];
-	while (tem[0].length() > 0)
-	{
-		target_fd = -1;
-		if ((comma = tem[0].find(',')) != std::string::npos)
+	channel_name = tem[0];
+	while (tem[1].length() > 0)
+	{		
+		if ((comma= tem[1].find(',')) != std::string::npos)
 		{
-			channel_name = tem[0].substr(0, comma);
-			tem[0].erase(0, comma + 1);
+			user_name = tem[1].substr(0, comma);
+			tem[1].erase(0, comma + 1);
 		}
 		else
 		{
-			channel_name = tem[0];
-			tem[0]  = "";
+			user_name = tem[1];
+			tem[1] = "";
 		}
 
-		if (tem.size() > 1 && tem[1].length() > 0)
-		{
-			if ((comma= tem[1].find(',')) != std::string::npos)
-			{
-				user_name = tem[1].substr(0, comma);
-				tem[1].erase(0, comma + 1);
-			}
-			else
-			{
-				user_name = tem[1];
-				tem[1] = "";
-			}
-		}
+		//KICK 할 유저의 fd 구하기, 없으면 -1
+		target_fd = -1;
 		for (it = clients.begin() ; it != clients.end(); it++)
 		{
 			if (it->second.getNickname() == user_name)
@@ -60,6 +54,11 @@ void	CommandHandler::kick(Command &cmd, Client &client, Server &server)
 		else if (target_fd == -1)
 		{
 			_reply += "irc.local 401 " + client.getNickname() + " " + user_name + " :No such nick\r\n";
+			continue;
+		}
+		else if (!channels.at(channel_name).isMember(target_fd))
+		{
+			_reply += "irc.local 441 " + client.getNickname() + " " + user_name + +" " + channel_name + " :They are not on that channel\r\n";
 			continue;
 		}
 		else if (!channels.at(channel_name).isOperator(client))

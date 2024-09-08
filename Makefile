@@ -5,7 +5,6 @@ SRCS = ./srcs/main.cpp\
 	   ./srcs/channel/Channel.cpp\
 	   ./srcs/command/Command.cpp\
 	   ./srcs/command/CommandHandler.cpp\
-	   ./srcs/command/comNumeric.cpp\
 	   ./srcs/command/comPart.cpp\
 	   ./srcs/command/comNames.cpp\
 	   ./srcs/command/comJoin.cpp\

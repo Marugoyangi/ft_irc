@@ -8,7 +8,7 @@ void CommandHandler::part(Command &cmd, Client &client, std::map<std::string, Ch
 
 	if (_tem.size() < 1)
 	{
-		com461(client.getNickname(), "PART");
+		_reply += ":irc.local 461 " + client.getNickname() + " PART : Not enough parameters\r\n";
 		return;
 	}
 
