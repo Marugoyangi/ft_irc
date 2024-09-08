@@ -441,12 +441,12 @@ void Server::stopKqueue()
 void    Server::cleanChans()
 {
     std::map<std::string, Channel>::iterator it;
-    for (it = _channels.begin(); it != _channels.end(); ++it)
+    for (it = _channels.begin(); it != _channels.end();)
     {
         if (it->second.getFdList().size() == 0)
-            _channels.erase(it);
-        if (_channels.size() == 0)
-            break;
+            _channels.erase(it++);
+		else
+			++it;
     }
 }
 

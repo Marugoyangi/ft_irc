@@ -293,12 +293,12 @@ void CommandHandler::user(Command &cmd, Client &client)
     }
     if (identified_user == "") // debug
         printf("Debug: Ident_serv: No USERID received\n");
-    if (cmd.getParams()[0].size() > 9 || cmd.getParams()[0].size() < 1 ||
-    cmd.getParams()[3].size() > 50)
-    {
-        reply(461, "USER", "Not enough parameters");
-        return;
-    }
+    // if (cmd.getParams()[0].size() > 9 || cmd.getParams()[0].size() < 1 ||
+    // cmd.getParams()[3].size() > 50)
+    // {
+    //     reply(461, "USER", "Not enough parameters");
+    //     return;
+    // }
     if (cmd.getParams()[2] != "*")
         client.setHostname(cmd.getParams()[2]); // debug purpose
     std::string str = "~" + cmd.getParams()[0]; // tilde means custom ident
