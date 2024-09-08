@@ -17,7 +17,7 @@ void	CommandHandler::kick(Command &cmd, Client &client, Server &server)
 		_reply += ":irc.local 461 " + client.getNickname() + " KICK : Not enough parameters\r\n";
 		return ; 
 	}
-	if (tem.size() > 2)
+	if (tem.size() > 2 && tem[2].length() != 0)
 		message = tem[2];
 	channel_name = tem[0];
 	while (tem[1].length() > 0)
