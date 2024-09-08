@@ -6,7 +6,7 @@ void	CommandHandler::kick(Command &cmd, Client &client, Server &server)
 	std::string	channel_name = "";
 	std::string	user_name = "";
 	int	target_fd;
-	std::string	message = "";
+	std::string	message = client.getNickname();
 	std::vector<std::string> tem = cmd.getParams();
 	std::map<std::string, Channel> &channels = server.getChannels();
 	std::map<int, Client> &clients = server.getClients();
