@@ -43,6 +43,9 @@ class CommandHandler
         void    handleChannelMode(Channel &channel, Command const &cmd, Client &client);
         void    handleUserMode(Client &client, Command const &cmd);
         void    handleChannelOperatorMode(Channel &channel, Client &client, std::vector<std::string> &params, bool add);
+        void    botHelp(Client const &client, Channel const &channel);
+        void    botTime(Client const &client, Channel const &channel);
+        void    botUptime(Client const &client, Channel const &channel);
 
 	void	handleChannelInviteMode(Channel &channel, Client &client, std::vector<std::string> &params, bool add);
     void    handleChannelKeyMode(Channel &channel, Client &client, std::vector<std::string> &params, bool add);
@@ -52,6 +55,6 @@ class CommandHandler
     void    topic(Command const &cmd, Client const &client, Server &server);
         void    com353(Server &server, Channel &channels);                            //RPL_NAMREPLY
         void    com366(Client const &client, std::string const &channel_name);              //RPL_ENDOFNAMES
-        void    com332(Client const &client, Channel const channel);   //RPL_TOPIC
+        void    com332(Client const &client, std::string topic);   //RPL_TOPIC
 };
 #endif

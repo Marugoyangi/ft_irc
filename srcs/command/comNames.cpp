@@ -27,8 +27,11 @@ void	CommandHandler::com353(Server &server, Channel &channel)  //RPL_NAMREPLY
 {
 	if (channel.isMember(this->_client->getSocket_fd()))
 	{
-		_reply += ":irc.local 353 " + this->_client->getNickname() + " = " + channel.getChannelName() + " :";
-		_reply += channel.getChannelMembers(channel, server) + "\r\n";
+		std::string reply = ":irc.local 353 " + this->_client->getNickname() + " = " + channel.getChannelName() + " :";
+        reply += channel.getChannelMembers(channel, server) + "\r\n";
+
+        // 현재 클라이언트에게 메시지 전송
+        _reply += reply;
 	}
 }
 

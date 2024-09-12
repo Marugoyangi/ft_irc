@@ -91,11 +91,14 @@ void CommandHandler::join(Command &cmd, Client &client, Server &server)
 			std::string operator_msg = ":irc.local MODE " + channel_name + " +o " + client.getNickname() + "\r\n";
 			send(client.getSocket_fd(), operator_msg.c_str(), operator_msg.length(), 0);
 		}
+		std::cout << "topic : " << channels[channel_name].getChannelTopic() << std::endl;
 		if (channels.find(channel_name) != channels.end() && channels[channel_name].getChannelTopic() != "")
-			com332(client, channels[channel_name]);
+			com332(client, channels[channel_name].getChannelTopic());
 		_reply += client.getSource() + " JOIN :" + channel_name + "\r\n";
 		com353(server, channels[channel_name]);
 		com366(client, channel_name);
+		_reply += ":BOT!~Bot@irc.local PRIVMSG " + channel_name + " :Welcome to " + channel_name + " " + \
+		client.getNickname() + ", type '!bot' for further info" "\r\n";
 		channels[channel_name].messageToMembers(client, "JOIN", channel_name);
 	}
 	return;

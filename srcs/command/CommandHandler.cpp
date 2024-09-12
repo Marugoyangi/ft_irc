@@ -110,10 +110,6 @@ void CommandHandler::execute(Command &cmd, Client &client, Server &server)
         {
             // WHOWAS command
         }
-        else if (command == "ISON")
-        {
-            // ISON command
-        }
         else
         {
             // ERR_UNKNOWNCOMMAND
@@ -220,7 +216,7 @@ void CommandHandler::nick(Command &cmd, Client &client)
     }
     std::string nickname = cmd.getParams()[0];
     std::set<std::string> nicknames = client.getServer()->getNicknames();
-    if (nicknames.find(nickname) != nicknames.end())
+    if ((nicknames.find(nickname) != nicknames.end()) || nickname == "bot" || nickname == "BOT")
     {
         std::string tmp = "NICK " + nickname;
         reply(433, tmp, "Nickname is already in use");
@@ -326,7 +322,7 @@ void CommandHandler::welcome(Client &client)
     reply(003, client_name, "This server was created " + std::string(buffer));
     reply(004, client_name, server_name + " 1.0 " + "o " + "itkol");
     std::stringstream modes;
-    modes << "CASEMAPPING=rfc1459 CHARSET=ascii NICKLEN=9 TOPICLEN=390 " << "CHANTYPES=# PREFIX=(o)@ MODES=4 NETWORK=" << server_name << " MAXTARGETS=" << MAX_TARGETS << " :are supported by this server";
+    modes << "CASEMAPPING=rfc1459 CHARSET=ascii NICKLEN=9 TOPICLEN=390 " << "CHANTYPES=# PREFIX=(ov)@+ MODES=4 NETWORK=" << server_name << " MAXTARGETS=" << MAX_TARGETS << " :are supported by this server";
     reply(005, client_name, modes.str());
     std::stringstream ss;
     ss << "There are " << client.getServer()->getClients().size() << " clients, 1 services and 1 servers"; // bot service

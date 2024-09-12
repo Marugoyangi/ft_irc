@@ -5,7 +5,7 @@ void CommandHandler::handleChannelInviteMode(Channel &channel, Client &client, s
     if (params.size() < 2)
     {
         // ERR_NEEDMOREPARAMS
-        _reply += ":localhost 461 " + client.getNickname() + " MODE :Not enough parameters\r\n";
+        _reply += ":irc.local 461 " + client.getNickname() + " MODE :Not enough parameters\r\n";
         return;
     }
     if (add)
@@ -24,7 +24,7 @@ void CommandHandler::handleChannelKeyMode(Channel &channel, Client &client, std:
     if ((params.size() < 3 && add) || (params.size() < 2 && !add))
     {
         // ERR_NEEDMOREPARAMS
-        _reply += ":localhost 461 " + client.getNickname() + " MODE :Not enough parameters\r\n";
+        _reply += ":irc.local 461 " + client.getNickname() + " MODE :Not enough parameters\r\n";
         return;
     }
     std::string key = params[2];
@@ -50,7 +50,7 @@ void  CommandHandler::handleChannelLimitMode(Channel &channel, Client &client, s
     if ((params.size() < 3 && add) || (params.size() < 2 && !add))
     {
         // ERR_NEEDMOREPARAMS
-        _reply += ":localhost 461 " + client.getNickname() + " MODE :Not enough parameters\r\n";
+        _reply += ":irc.local 461 " + client.getNickname() + " MODE :Not enough parameters\r\n";
         return;
     }
     if (add)
@@ -80,7 +80,7 @@ void CommandHandler::handleChannelTopicMode(Channel &channel, Client &client, st
     if (params.size() < 2)
     {
         // ERR_NEEDMOREPARAMS
-        _reply += ":localhost 461 " + client.getNickname() + " MODE :Not enough parameters\r\n";
+        _reply += ":irc.local 461 " + client.getNickname() + " MODE :Not enough parameters\r\n";
         return;
     }
     if (add)

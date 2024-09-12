@@ -42,6 +42,12 @@ void CommandHandler::privmsg(Command const &cmd, Client const &client, Server &s
             {
                 Channel &channel = channels[target];
                 channel.messageToMembers(client, "PRIVMSG " + target, message + "\r\n");
+                if (message == "!bot")
+                    botHelp(client, channels[target]);
+                else if (message == "!time")
+                    botTime(client, channels[target]);
+                else if (message == "!uptime")
+                    botUptime(client, channels[target]);
             }
             else
             {

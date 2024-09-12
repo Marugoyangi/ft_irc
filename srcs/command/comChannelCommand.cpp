@@ -69,7 +69,7 @@ void CommandHandler::topic(Command const &cmd, Client const &client, Server &ser
     if (params.size() < 1)
     {
         // ERR_NEEDMOREPARAMS
-        _reply += ":localhost 461 " + client.getNickname() + " TOPIC :Not enough parameters\r\n";
+        _reply += ":irc.local 461 " + client.getNickname() + " TOPIC :Not enough parameters\r\n";
         return;
     }
 
@@ -78,7 +78,7 @@ void CommandHandler::topic(Command const &cmd, Client const &client, Server &ser
     if (channels.find(channel_name) == channels.end())
     {
         // ERR_NOSUCHCHANNEL
-        _reply += ":localhost 403 " + client.getNickname() + " " + channel_name + " :No such channel\r\n";
+        _reply += ":irc.local 403 " + client.getNickname() + " " + channel_name + " :No such channel\r\n";
         return;
     }
     std::cout << "channel_name: " << channel_name << std::endl;
@@ -89,14 +89,14 @@ void CommandHandler::topic(Command const &cmd, Client const &client, Server &ser
         if (channel.getChannelTopic() == "")
         {
             // RPL_NOTOPIC
-            _reply += ":localhost 331 " + client.getNickname() + " " + channel_name + " :No topic is set\r\n";
+            _reply += ":irc.local 331 " + client.getNickname() + " " + channel_name + " :No topic is set\r\n";
         }
         else
         {
             if (channel.getChannelTopic().size() >= 390)
-                _reply += ":localhost 332 " + client.getNickname() + " " + channel_name + " :" + channel.getChannelTopic().substr(0, 390) + "\r\n";
+                _reply += ":irc.local 332 " + client.getNickname() + " " + channel_name + " :" + channel.getChannelTopic().substr(0, 390) + "\r\n";
             else
-                _reply += ":localhost 332 " + client.getNickname() + " " + channel_name + " :" + channel.getChannelTopic() + "\r\n";
+                _reply += ":irc.local 332 " + client.getNickname() + " " + channel_name + " :" + channel.getChannelTopic() + "\r\n";
         }
     }
     else
@@ -105,13 +105,13 @@ void CommandHandler::topic(Command const &cmd, Client const &client, Server &ser
         if (!channel.isMember(client.getSocket_fd()))
         {
             // ERR_NOTONCHANNEL
-            _reply += ":localhost 442 " + client.getNickname() + " " + channel_name + " :You're not on that channel\r\n";
+            _reply += ":irc.local 442 " + client.getNickname() + " " + channel_name + " :You're not on that channel\r\n";
             return;
         }
         if (!channel.isOperator(client) && channel.isMode(MODE_T))
         {
             // ERR_CHANOPRIVSNEEDED
-            _reply += ":localhost 482 " + client.getNickname() + " " + channel_name + " :You're not channel operator\r\n";
+            _reply += ":irc.local 482 " + client.getNickname() + " " + channel_name + " :You're not channel operator\r\n";
             return;
         }
         std::string topic = params[1];
@@ -126,16 +126,11 @@ void CommandHandler::topic(Command const &cmd, Client const &client, Server &ser
     }
 }
 
-void CommandHandler::com332(Client const &client, Channel const channel)
+void CommandHandler::com332(Client const &client, std::string topic)
 {
-    if (channel.getChannelTopic() == "")
-        reply(331, channel.getChannelName(), "No topic is set");
-    else
-    {
-        std::stringstream ss;
+    std::stringstream ss;
 
-        ss << channel.getTopicTime();
-        _reply += ":irc.local 332 " + client.getNickname() + " " + channel.getChannelName() + " :" + channel.getChannelTopic() + "\r\n";
-        _reply += ":irc.local 333 " + client.getNickname() + " " + channel.getChannelName() + " " + client.getSource() + " :" + ss.str() + "\r\n";
-    }
+    ss << time(NULL); 
+    _reply += ":irc.local 332 " + client.getNickname() + " " + topic + " :" + topic + "\r\n";
+    _reply += ":irc.local 333 " + client.getNickname() + " " + topic + " " + client.getSource() + " :" + ss.str() + "\r\n";
 }

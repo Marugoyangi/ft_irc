@@ -115,7 +115,7 @@ void CommandHandler::handleUserMode(Client &client, Command const &cmd)
     if (params.size() < 2)
     {
         // ERR_NEEDMOREPARAMS
-        _reply += ":localhost 461 " + client.getNickname() + " MODE :Not enough parameters\r\n";
+        _reply += ":irc.local 461 " + client.getNickname() + " MODE :Not enough parameters\r\n";
         return;
     }
 
@@ -137,7 +137,7 @@ void CommandHandler::handleUserMode(Client &client, Command const &cmd)
                     break;
                 // 다른 사용자 모드 처리
                 default:
-                    _reply += ":localhost 501 " + client.getNickname() + " :Unknown MODE flag\r\n";
+                    _reply += ":irc.local 501 " + client.getNickname() + " :Unknown MODE flag\r\n";
                     break;
             }
         }
@@ -152,7 +152,7 @@ void CommandHandler::mode(Command const &cmd, Client &client, Server &server)
     if (params.empty())
     {
         // ERR_NEEDMOREPARAMS
-        _reply += ":localhost 461 " + client.getNickname() + " MODE :Not enough parameters\r\n";
+        _reply += ":irc.local 461 " + client.getNickname() + " MODE :Not enough parameters\r\n";
         return;
     }
 
@@ -169,7 +169,7 @@ void CommandHandler::mode(Command const &cmd, Client &client, Server &server)
         else
         {
             // ERR_NOSUCHCHANNEL
-            _reply += ":localhost 403 " + client.getNickname() + " " + target + " :No such channel\r\n";
+            _reply += ":irc.local 403 " + client.getNickname() + " " + target + " :No such channel\r\n";
         }
     }
     else

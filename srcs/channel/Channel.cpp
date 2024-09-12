@@ -5,6 +5,7 @@ Channel::Channel() {}
 Channel::Channel(std::string myname) : _channel_name(myname), _topic(""), _topic_time(0), _mode(0b00000000), _key(""), _limit(-1)
 {
 	std::cout << "\033[32mChannel Created \033[0m" << std::endl;  //Debug
+	_operators.insert("BOT");
 }
 
 Channel::~Channel() 
@@ -103,6 +104,7 @@ std::string	Channel::getChannelMembers(Channel const &channel, Server &server) c
 	std::string members;
 
 	std::map<int, Client> &clients = server.getClients();
+	members += "@BOT ";
 	std::vector<int>::const_iterator it = channel._fdlist.begin();
 	while (it != channel._fdlist.end())
 	{
@@ -110,8 +112,6 @@ std::string	Channel::getChannelMembers(Channel const &channel, Server &server) c
 		{
 			if (isOperator(clients.at(*it)))
 				members += "@";
-			else
-				members += "+";
 			members += clients.at(*it).getNickname();
 			if (it + 1 != channel._fdlist.end())
 				members += " ";
@@ -245,3 +245,13 @@ std::vector<int> &Channel::getFdList()
 {
 	return _fdlist;
 }
+
+void Channel::botmessageToMembers(std::string msg) const
+{
+	std::cout << msg << std::endl;
+	for (int i = 0; i < (int)_fdlist.size(); i++)
+	{
+		send(_fdlist[i], msg.c_str(), msg.length(), 0);
+	}
+}
+	
