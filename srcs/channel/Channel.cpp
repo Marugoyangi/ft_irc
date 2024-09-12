@@ -119,7 +119,7 @@ void	Channel::messageToMembers(Client const &client, std::string cmd, std::strin
 	std::string msg;
 
 	msg = client.getSource() + " " + cmd + " :" + param + "\r\n";
-	for (int i = 0 ; i < (int)_fdlist.size(); i++)
+	for (int i = 0; i < (int)_fdlist.size(); i++)
 	{
 		if (_fdlist[i] == client.getSocket_fd())
 			continue;
