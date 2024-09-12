@@ -129,7 +129,7 @@ bool CommandHandler::handleDCCCommand(std::string const &message, Client const &
     }
     params.push_back(message.substr(start));
     std::cout << "DCC command: " << params[0] << " " << params[1] << std::endl;
-    if (params[1] == "SEND" || params[1] == "GET")
+    if (params[1] == "SEND")
     {
         std::string file_size_str = params[5];
         size_t file_size;
