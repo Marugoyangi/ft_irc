@@ -21,7 +21,6 @@
 #include <cerrno>
 #include <sstream>
 #include <iterator>
-#include <sys/timerfd.h>
 #include "../command/Command.hpp"
 #include "../command/CommandHandler.hpp"
 #include "../client/Client.hpp"
@@ -29,10 +28,12 @@
 
 #ifdef __APPLE__
 #include <sys/event.h>
+#include <sys/time.h>
 #endif
 
 #ifdef __linux__
 #include <sys/epoll.h>
+#include <sys/timerfd.h>
 #endif
 
 extern volatile sig_atomic_t g_shutdown;
