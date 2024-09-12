@@ -33,6 +33,8 @@ class CommandHandler
 
 		void	join(Command &cmd, Client &client, Server &server);
         void    part(Command &cmd, Client &client, std::map<std::string, Channel> &channels);
+        void    kick(Command &cmd, Client &client, Server &server);
+        void    quit(Command &cmd, Client &client, std::map<std::string, Channel> &channels);
         void	names(Command const &cmd, Client const &client, Server &server);
 		void	privmsg(Command const &cmd, Client const &client, Server &server);
         void    mode(Command const &cmd, Client &client, Server &server);
@@ -47,8 +49,6 @@ class CommandHandler
     void    handleChannelTopicMode(Channel &channel, Client &client, std::vector<std::string> &params, bool add);
 	void 	invite(Command &cmd, Client &client, Server &server);
     void    topic(Command const &cmd, Client const &client, Server &server);
-	void    com001(Client const &client, std::string const &server_name);               //RPL_WELCOME 
-        void    com461(std::string const &nickname, std::string const &cmd);                //ERR_NEEDMOREPARAMS
         void    com353(Server &server, Channel &channels);                            //RPL_NAMREPLY
         void    com366(Client const &client, std::string const &channel_name);              //RPL_ENDOFNAMES
         void    com332(Client const &client, Channel const channel);   //RPL_TOPIC

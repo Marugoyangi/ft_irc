@@ -334,25 +334,46 @@ void Server::setupKqueue()
                 ssize_t bytes_received = recv(client, &buffer[0], BUFFER_SIZE - 1, 0);
                 if (bytes_received < 0)
                 {
+                    std::string ermsg = strerror(errno);
                     perror("recv");
                     EV_SET(&change_list, client, EVFILT_READ, EV_DELETE, 0, 0, NULL);
                     kevent(_event_fd, &change_list, 1, NULL, 0, NULL);
-                    close(client);
                     std::map<int, Client>::iterator it = _clients.find(client);
-                    if (it != _clients.end()) {
+                    if (it != _clients.end()) 
+                    {
+                        for (std::map<std::string, Channel>::iterator chan_it = _channels.begin(); chan_it != _channels.end(); chan_it++)
+                        {
+                            if (chan_it->second.isMember(it->second.getSocket_fd()))
+                            {
+                                chan_it->second.removeClient(it->second.getSocket_fd());
+                                chan_it->second.messageToMembers(it->second, "QUIT", ermsg);
+                            }
+                        }
                         _clients.erase(it);
                     }
+                    close(client);
+                    cleanChans();
                 }
                 else if (bytes_received == 0)
-                {
+                {                    
                     printf("Client closed connection.\n");
                     EV_SET(&change_list, client, EVFILT_READ, EV_DELETE, 0, 0, NULL);
                     kevent(_event_fd, &change_list, 1, NULL, 0, NULL);
-                    close(client);
                     std::map<int, Client>::iterator it = _clients.find(client);
-                    if (it != _clients.end()) {
+                    if (it != _clients.end()) 
+                    {
+                        for (std::map<std::string, Channel>::iterator chan_it = _channels.begin(); chan_it != _channels.end(); chan_it++)
+                        {
+                            if (chan_it->second.isMember(it->second.getSocket_fd()))
+                            {
+                                chan_it->second.removeClient(it->second.getSocket_fd());
+                                chan_it->second.messageToMembers(it->second, "QUIT", it->second.getDisconnectMessage());
+                            }
+                        }
                         _clients.erase(it);
                     }
+                    close(client);
+                    cleanChans();
                 }
                 else
                 {
@@ -415,6 +436,18 @@ void Server::stopKqueue()
         close(client_fd);
     }
     close(_event_fd);
+}
+
+void    Server::cleanChans()
+{
+    std::map<std::string, Channel>::iterator it;
+    for (it = _channels.begin(); it != _channels.end();)
+    {
+        if (it->second.getFdList().size() == 0)
+            _channels.erase(it++);
+		else
+			++it;
+    }
 }
 
 #endif

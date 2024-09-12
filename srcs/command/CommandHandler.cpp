@@ -50,7 +50,7 @@ void CommandHandler::execute(Command &cmd, Client &client, Server &server)
         }
         else if (command == "QUIT")
         {
-            // QUIT command
+            quit(cmd, client, server.getChannels());
         }
         else if (command == "JOIN")
         {
@@ -59,6 +59,7 @@ void CommandHandler::execute(Command &cmd, Client &client, Server &server)
         else if (command == "PART")
         {
             part(cmd, client, server.getChannels());
+            server.cleanChans();
         }
         else if (command == "MODE")
         {
@@ -82,7 +83,8 @@ void CommandHandler::execute(Command &cmd, Client &client, Server &server)
         }
         else if (command == "KICK")
         {
-            // KICK command
+            kick(cmd, client, server);
+            server.cleanChans();
         }
         else if (command == "PRIVMSG")
         {
@@ -123,8 +125,11 @@ void CommandHandler::execute(Command &cmd, Client &client, Server &server)
     }
     // client.showClient();
     client.setLast_active_time(time(NULL));
-	std::cout << "\033[01m\033[33mmessage to client " << client.getSocket_fd() << ": "  << _reply << "\033[0m" << std::endl;
-    send(client.getSocket_fd(), _reply.c_str(), _reply.length(), 0);
+    if (_reply != "")
+    {
+        send(client.getSocket_fd(), _reply.c_str(), _reply.length(), 0);
+        std::cout << "\033[01m\033[33mmessage to client " << client.getSocket_fd() << ": "  << _reply << "\033[0m" << std::endl;
+    }
 }
 
 void CommandHandler::reply(int numeric, std::string param, std::string message)
@@ -289,12 +294,12 @@ void CommandHandler::user(Command &cmd, Client &client)
     }
     if (identified_user == "") // debug
         printf("Debug: Ident_serv: No USERID received\n");
-    if (cmd.getParams()[0].size() > 9 || cmd.getParams()[0].size() < 1 ||
-    cmd.getParams()[3].size() > 50)
-    {
-        reply(461, "USER", "Not enough parameters");
-        return;
-    }
+    // if (cmd.getParams()[0].size() > 9 || cmd.getParams()[0].size() < 1 ||
+    // cmd.getParams()[3].size() > 50)
+    // {
+    //     reply(461, "USER", "Not enough parameters");
+    //     return;
+    // }
     if (cmd.getParams()[2] != "*")
         client.setHostname(cmd.getParams()[2]); // debug purpose
     std::string str = "~" + cmd.getParams()[0]; // tilde means custom ident

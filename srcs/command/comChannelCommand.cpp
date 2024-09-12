@@ -119,9 +119,10 @@ void CommandHandler::topic(Command const &cmd, Client const &client, Server &ser
         channel.setChannelTopic(topic);
         channel.setTopicTime(time(NULL));
         // TOPIC 메시지 전송
-        std::string mode_msg = ":irc.local TOPIC " + channel.getChannelName() + " " + topic + "\r\n";
-        send(client.getSocket_fd(), mode_msg.c_str(), mode_msg.length(), 0);
-	    channel.messageToMembers(client, "TOPIC " + channel.getChannelName() + " " + topic, "");
+        // std::string mode_msg = ":irc.local TOPIC " + channel.getChannelName() + " " + topic + "\r\n";
+        // send(client.getSocket_fd(), mode_msg.c_str(), mode_msg.length(), 0);
+	    // channel.messageToMembersIncludeSelf(client, "TOPIC " + channel.getChannelName() + " " + topic, "");
+	    channel.messageToMembersIncludeSelf(client, "TOPIC " + channel.getChannelName(), topic);
     }
 }
 

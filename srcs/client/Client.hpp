@@ -24,6 +24,7 @@ class Client
 		std::string _password;
 		std::string	_try_password;
 		int			_socket_fd;
+		std::string disconnect_message;
 
 	
 	public:
@@ -49,6 +50,8 @@ class Client
 		void	setIs_passed(bool is_passed);
 		void	setEstablished_time(time_t established_time);
 		void	setLast_active_time(time_t last_active_time);
+		void	setDisconnectMessage(std::string message);
+		std::string	getDisconnectMessage() const;
 		std::string	getNickname() const;
 		std::string	getUsername() const;
 		std::string	getRealname() const;

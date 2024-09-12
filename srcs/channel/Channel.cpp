@@ -4,7 +4,10 @@ Channel::Channel() {}
 
 Channel::Channel(std::string myname) : _channel_name(myname), _topic(""), _topic_time(0), _mode(0), _key(""), _limit(-1){}
 
-Channel::~Channel() {}
+Channel::~Channel() 
+{
+	std::cout << "\033[32mChannel Destroyed \033[0m" << std::endl;  //Debug
+}
 
 Channel::Channel(const Channel &other)
 {
@@ -110,6 +113,19 @@ void	Channel::messageToMembers(Client const &client, std::string cmd, std::strin
 	{
 		if (_fdlist[i] == client.getSocket_fd())
 			continue;
+		std::cout << "\033[01m\033[33mmessage to client " << _fdlist[i] << ": "  << msg << "\033[0m" << std::endl; // debug
+		if (isMember(_fdlist[i]))
+			send(_fdlist[i], msg.c_str(), msg.length(), 0);
+	}
+}
+
+void	Channel::messageToMembersIncludeSelf(Client const &client, std::string cmd, std::string param)
+{
+	std::string msg;
+
+	msg = client.getSource() + " " + cmd + " :" + param + "\r\n";
+	for (int i = 0 ; i < (int)_fdlist.size(); i++)
+	{
 		std::cout << "\033[01m\033[33mmessage to client " << _fdlist[i] << ": "  << msg << "\033[0m" << std::endl; // debug
 		if (isMember(_fdlist[i]))
 			send(_fdlist[i], msg.c_str(), msg.length(), 0);
