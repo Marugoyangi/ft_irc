@@ -68,5 +68,7 @@ void	CommandHandler::kick(Command &cmd, Client &client, Server &server)
 		}
 		channels.at(channel_name).messageToMembersIncludeSelf(client, "KICK " + channel_name + " " + user_name, message);
 		channels.at(channel_name).removeClient(target_fd);
+		channels.at(channel_name).removeOperator(user_name);
+		channels.at(channel_name).removeInvited(user_name);
 	}
 }
