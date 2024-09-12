@@ -89,21 +89,21 @@ void Server::pingClients()
                 std::cout << "Client " << it->first << " has timed out" << std::endl;
                 std::cout << "register failed" << std::endl;
                 // 클라이언트 정보 삭제
-	            close(it->first);
-	            #ifdef __linux__
-	            epoll_ctl(_event_fd, EPOLL_CTL_DEL, it->first, NULL);
-	            #endif
-	            // 모든 채널에서 클라이언트를 삭제
-	            for (std::map<std::string, Channel>::iterator it_ch = getChannels().begin(); it_ch != getChannels().end(); ++it_ch)
-	            {
-                	Channel& channel = it_ch->second;
-            		channel.removeClient(it->first);
-                	channel.removeOperator(it->second.getNickname());
-    	            channel.removeInvited(it->second.getNickname());
-	            }
-                std::map<int, Client>::iterator to_erase = it;
-                ++it;
-                _clients.erase(to_erase);
+	            shutdown(it->first, SHUT_RDWR);
+	            // #ifdef __linux__
+	            // epoll_ctl(_event_fd, EPOLL_CTL_DEL, it->first, NULL);
+	            // #endif
+	            // // 모든 채널에서 클라이언트를 삭제
+	            // for (std::map<std::string, Channel>::iterator it_ch = getChannels().begin(); it_ch != getChannels().end(); ++it_ch)
+	            // {
+                // 	Channel& channel = it_ch->second;
+            	// 	channel.removeClient(it->first);
+                // 	channel.removeOperator(it->second.getNickname());
+    	        //     channel.removeInvited(it->second.getNickname());
+	            // }
+                // std::map<int, Client>::iterator to_erase = it;
+                // ++it;
+                // _clients.erase(to_erase);
                 continue;
             }
         }
@@ -111,21 +111,22 @@ void Server::pingClients()
         {
             std::cout << "Client " << it->first << " has timed out" << std::endl;
             std::cout << "ping failed" << std::endl;
-            close(it->first);
-	        #ifdef __linux__
-	        epoll_ctl(_event_fd, EPOLL_CTL_DEL, it->first, NULL);
-	        #endif
-	        // 모든 채널에서 클라이언트를 삭제
-	        for (std::map<std::string, Channel>::iterator it_ch = getChannels().begin(); it_ch != getChannels().end(); ++it_ch)
-	        {
-              	Channel& channel = it_ch->second;
-                channel.removeClient(it->first);
-                channel.removeOperator(it->second.getNickname());
-    	        channel.removeInvited(it->second.getNickname());
-	        }
-            std::map<int, Client>::iterator to_erase = it;
-            ++it;
-            _clients.erase(to_erase);
+            shutdown(it->first, SHUT_RDWR);
+	        // #ifdef __linux__
+	        // epoll_ctl(_event_fd, EPOLL_CTL_DEL, it->first, NULL);
+	        // #endif
+	        // // 모든 채널에서 클라이언트를 삭제
+	        // for (std::map<std::string, Channel>::iterator it_ch = getChannels().begin(); it_ch != getChannels().end(); ++it_ch)
+	        // {
+            //   	Channel& channel = it_ch->second;
+            //     channel.removeClient(it->first);
+            //     channel.removeOperator(it->second.getNickname());
+    	    //     channel.removeInvited(it->second.getNickname());
+            //     channel.messageToMembersIncludeSelf(it->second, "QUIT", "ping failed");
+	        // }
+            // std::map<int, Client>::iterator to_erase = it;
+            // ++it;
+            // _clients.erase(to_erase);
             continue;
         }
         std::string ping_msg = ":" + _server_name + " PING " + it->second.getNickname() + "\r\n";
@@ -288,9 +289,21 @@ void Server::setupEpoll()
                     epoll_ctl(_event_fd, EPOLL_CTL_DEL, client, NULL);
                     close(client);
                     std::map<int, Client>::iterator it = _clients.find(client);
-                    if (it != _clients.end()) {
+                    if (it != _clients.end()) 
+                    {
+                        for (std::map<std::string, Channel>::iterator chan_it = _channels.begin(); chan_it != _channels.end(); chan_it++)
+                        {
+                            if (chan_it->second.isMember(it->second.getSocket_fd()))
+                            {
+                                chan_it->second.removeClient(it->second.getSocket_fd());
+                                chan_it->second.removeOperator(it->second.getNickname());
+                                chan_it->second.removeInvited(it->second.getNickname());
+                                chan_it->second.messageToMembers(it->second, "QUIT", it->second.getDisconnectMessage());
+                            }
+                        }
                         _clients.erase(it);
                     }
+                    std::cout << "client disconnected called from server read" << std::endl;
                 }
                 else
                 {
@@ -437,6 +450,8 @@ void Server::setupKqueue()
                             if (chan_it->second.isMember(it->second.getSocket_fd()))
                             {
                                 chan_it->second.removeClient(it->second.getSocket_fd());
+                                chan_it->second.removeOperator(it->second.getNickname());
+                                chan_it->second.removeInvited(it->second.getNickname());
                                 chan_it->second.messageToMembers(it->second, "QUIT", ermsg);
                             }
                         }
