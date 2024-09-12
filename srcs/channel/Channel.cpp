@@ -81,6 +81,16 @@ void	Channel::removeClient(int fd)
 	}
 }
 
+void	Channel::removeOperator(std::string nickname)
+{
+	_operators.erase(nickname);
+}
+
+void	Channel::removeInvited(std::string nickname)
+{
+	_invited_list.erase(nickname);
+}
+
 std::string	Channel::getChannelMembers(Channel const &channel, Server &server) const
 {
 	std::string members;

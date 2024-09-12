@@ -83,8 +83,10 @@ public:
     std::string                     getPort();
     std::string                     getServerName();
     time_t                          getLocalTime();
+    int                             getEventFd();
 
     void    cleanChans();
+    void    removeClient(int fd);
     void                            pingClients();
 };
 

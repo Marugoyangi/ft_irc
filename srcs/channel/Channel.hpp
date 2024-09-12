@@ -45,6 +45,8 @@ class Channel
 		bool	isMember(int fd) const;
 		int		addClient(Client client);
 		void	removeClient(int fd);
+		void	removeOperator(std::string nickname);
+		void	removeInvited(std::string nickname);
 
 		void 	setOperator(Client &client, bool enable);
     	bool 	isOperator(const Client &client) const;

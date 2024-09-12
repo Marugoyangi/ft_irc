@@ -64,6 +64,16 @@ time_t Server::getLocalTime()
     return mktime(_time_local);
 }
 
+void Server::removeClient(int fd)
+{
+    _clients.erase(fd);
+}
+
+int Server::getEventFd()
+{
+    return _event_fd;
+}
+
 void Server::pingClients()
 {
     if (_clients.empty())
@@ -78,10 +88,19 @@ void Server::pingClients()
             {
                 std::cout << "Client " << it->first << " has timed out" << std::endl;
                 std::cout << "register failed" << std::endl;
-                close(it->first);
-                #ifdef __linux__
-                    epoll_ctl(_event_fd, EPOLL_CTL_DEL, it->first, NULL);
-                #endif
+                // 클라이언트 정보 삭제
+	            close(it->first);
+	            #ifdef __linux__
+	            epoll_ctl(_event_fd, EPOLL_CTL_DEL, it->first, NULL);
+	            #endif
+	            // 모든 채널에서 클라이언트를 삭제
+	            for (std::map<std::string, Channel>::iterator it_ch = getChannels().begin(); it_ch != getChannels().end(); ++it_ch)
+	            {
+                	Channel& channel = it_ch->second;
+            		channel.removeClient(it->first);
+                	channel.removeOperator(it->second.getNickname());
+    	            channel.removeInvited(it->second.getNickname());
+	            }
                 std::map<int, Client>::iterator to_erase = it;
                 ++it;
                 _clients.erase(to_erase);
@@ -93,9 +112,17 @@ void Server::pingClients()
             std::cout << "Client " << it->first << " has timed out" << std::endl;
             std::cout << "ping failed" << std::endl;
             close(it->first);
-            #ifdef __linux__
-                epoll_ctl(_event_fd, EPOLL_CTL_DEL, it->first, NULL);
-            #endif
+	        #ifdef __linux__
+	        epoll_ctl(_event_fd, EPOLL_CTL_DEL, it->first, NULL);
+	        #endif
+	        // 모든 채널에서 클라이언트를 삭제
+	        for (std::map<std::string, Channel>::iterator it_ch = getChannels().begin(); it_ch != getChannels().end(); ++it_ch)
+	        {
+              	Channel& channel = it_ch->second;
+                channel.removeClient(it->first);
+                channel.removeOperator(it->second.getNickname());
+    	        channel.removeInvited(it->second.getNickname());
+	        }
             std::map<int, Client>::iterator to_erase = it;
             ++it;
             _clients.erase(to_erase);
