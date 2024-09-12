@@ -90,10 +90,6 @@ void CommandHandler::execute(Command &cmd, Client &client, Server &server)
         {
             privmsg(cmd, client, server);
         }
-        else if (command == "NOTICE")
-        {
-            // NOTICE command
-        }
         else if (command == "PING")
         {
             _reply = ":irc.local PONG irc.local :irc.local\r\n";
@@ -369,4 +365,3 @@ void CommandHandler::welcome(Client &client)
     reply(372, client_name, ":- Welcome to the " + server_name + " IRC Network -:");
     reply(376, client_name, "End of message of the day.");
 }
-

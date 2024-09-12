@@ -37,6 +37,7 @@ class CommandHandler
         void    quit(Command &cmd, Client &client, std::map<std::string, Channel> &channels);
         void	names(Command const &cmd, Client const &client, Server &server);
 		void	privmsg(Command const &cmd, Client const &client, Server &server);
+        bool    handleDCCCommand(std::string const &message, Client const &client, Server &server);
         void    mode(Command const &cmd, Client &client, Server &server);
         //mode 옵션 함수            
         void    handleChannelMode(Channel &channel, Command const &cmd, Client &client);

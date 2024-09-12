@@ -93,13 +93,19 @@ void CommandHandler::privmsg(Command const &cmd, Client const &client, Server &s
                 {
                     user_found = true;
                     Client &recipient = it->second;
+                    // 메시지의 마지막 부분이 DCC로 시작하는지 확인
+                    if (message.find("DCC "))
+                    {
+                        
+                        if (!handleDCCCommand(message, client, server))
+                            return;
+                    }
                     std::string full_msg = client.getSource() + " PRIVMSG " + target + " :" + message + "\r\n";
                     std::cout << "Full message: " << full_msg << std::endl;
                     send(recipient.getSocket_fd(), full_msg.c_str(), full_msg.length(), 0);
                     break;
                 }
             }
-
             if (!user_found)
             {
                 // ERR_NOSUCHNICK
@@ -107,4 +113,36 @@ void CommandHandler::privmsg(Command const &cmd, Client const &client, Server &s
             }
         }
     }
+}
+
+bool CommandHandler::handleDCCCommand(std::string const &message, Client const &client, Server &server)
+{
+    std::vector<std::string> params;
+    std::string::size_type start = 0;
+    std::string::size_type end = message.find(" ");
+    (void)server;
+
+    while (end != std::string::npos) {
+        params.push_back(message.substr(start, end - start));
+        start = end + 1;
+        end = message.find(" ", start);
+    }
+    params.push_back(message.substr(start));
+    std::cout << "DCC command: " << params[0] << " " << params[1] << std::endl;
+    if (params[1] == "SEND" || params[1] == "GET")
+    {
+        std::string file_size_str = params[5];
+        size_t file_size;
+        std:: stringstream ss(file_size_str);
+        ss >> file_size;
+        // 파일 크기 제한 설정 (예: 10MB)
+        if (file_size > MAX_FILE_SIZE)
+        {
+            // 파일 크기 초과 에러 메시지 전송 (PRIVMSG 사용)
+            ss << "File size exceeds the limit: " << MAX_FILE_SIZE_MB << "MB";
+            reply(411, client.getNickname(), ss.str());
+            return false;
+        }
+    }
+    return true;
 }

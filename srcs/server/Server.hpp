@@ -44,7 +44,8 @@ extern void die(const char *msg);
 #define BUFFER_SIZE 512
 #define MAX_CLIENTS 1024
 #define MAX_TARGETS 4
-
+#define MAX_FILE_SIZE_MB 10
+#define MAX_FILE_SIZE 1024 * 1024 * MAX_FILE_SIZE_MB // 10MB
 class Client;
 class Server
 {
