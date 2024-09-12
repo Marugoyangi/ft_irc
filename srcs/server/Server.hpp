@@ -21,6 +21,7 @@
 #include <cerrno>
 #include <sstream>
 #include <iterator>
+#include <sys/timerfd.h>
 #include "../command/Command.hpp"
 #include "../command/CommandHandler.hpp"
 #include "../client/Client.hpp"

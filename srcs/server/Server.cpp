@@ -71,14 +71,38 @@ void Server::pingClients()
     std::map<int, Client>::iterator it;
     for (it = _clients.begin(); it != _clients.end(); ++it)
     {
+        if (it->second.getIs_registered() == false)
+        {
+            std::cout << "not registered" << std::endl;
+            if (difftime(time(NULL), it->second.getEstablished_time()) > 30)
+            {
+                std::cout << "Client " << it->first << " has timed out" << std::endl;
+                std::cout << "register failed" << std::endl;
+                close(it->first);
+                #ifdef __linux__
+                    epoll_ctl(_event_fd, EPOLL_CTL_DEL, it->first, NULL);
+                #endif
+                std::map<int, Client>::iterator to_erase = it;
+                ++it;
+                _clients.erase(to_erase);
+                continue;
+            }
+        }
+        else if (time(NULL) - it->second.getLast_active_time() > 60)
+        {
+            std::cout << "Client " << it->first << " has timed out" << std::endl;
+            std::cout << "ping failed" << std::endl;
+            close(it->first);
+            #ifdef __linux__
+                epoll_ctl(_event_fd, EPOLL_CTL_DEL, it->first, NULL);
+            #endif
+            std::map<int, Client>::iterator to_erase = it;
+            ++it;
+            _clients.erase(to_erase);
+            continue;
+        }
         std::string ping_msg = ":" + _server_name + " PING " + it->second.getNickname() + "\r\n";
         send(it->first, ping_msg.c_str(), ping_msg.length(), 0);
-        if (time(NULL) - it->second.getLast_active_time() > 15)
-        {
-            std::cout << "Client " << it->second.getNickname() << " has timed out" << std::endl;
-            close(it->first);
-            _clients.erase(it);
-        }
     }
 }
 
@@ -138,7 +162,29 @@ void Server::setupEpoll()
     {
         die("epoll_ctl: listen_sock");
     }
-    time_t last_ping_time = time(NULL); // 마지막 핑 타임 설정
+    int timer_fd = timerfd_create(CLOCK_MONOTONIC, 0); // 타이머 생성
+    if (timer_fd == -1) 
+    {
+        die("timerfd_create");
+    }
+
+    // 타이머 설정: 20초 주기로 핑을 보내도록 설정
+    struct itimerspec timer_spec;
+    timer_spec.it_value.tv_sec = 30;    // 처음 30초 후에 핑 시작
+    timer_spec.it_value.tv_nsec = 0;
+    timer_spec.it_interval.tv_sec = 30; // 30초 간격으로 반복
+    timer_spec.it_interval.tv_nsec = 0;
+    
+    if (timerfd_settime(timer_fd, 0, &timer_spec, NULL) == -1)
+    {
+        die("timerfd_settime");
+    }
+    ev.events = EPOLLIN;
+    ev.data.fd = timer_fd;
+    if (epoll_ctl(_event_fd, EPOLL_CTL_ADD, timer_fd, &ev) == -1)
+    {
+        die("epoll_ctl: timer_fd");
+    }
     while (g_shutdown == false)
     {
         int n = epoll_wait(_event_fd, events, MAX_EVENTS, -1);
@@ -176,6 +222,16 @@ void Server::setupEpoll()
                 }
                 Client new_client(client, _password, this);
                 _clients.insert(std::pair<int, Client>(client, new_client)); // 클라이언트 클래스 추가
+            }
+            else if (events[i].data.fd == timer_fd)
+            {
+                uint64_t exp;
+                ssize_t s = read(timer_fd, &exp, sizeof(uint64_t));
+                if (s == -1)
+                {
+                    die("read timer_fd");
+                }
+                pingClients();
             }
             else
             {
@@ -238,14 +294,9 @@ void Server::setupEpoll()
                 }
             }
         }
-        time_t current_time = time(NULL);
-        if (difftime(current_time, last_ping_time) >= 20)
-        {
-            pingClients();
-            last_ping_time = current_time; // 마지막 핑 시간 갱신
-        }
     }
     stopEpoll(); // Clean up
+    epoll_ctl(_event_fd, EPOLL_CTL_DEL, timer_fd, NULL);
 }
 
 void Server::stopEpoll()
@@ -289,6 +340,13 @@ void Server::setupKqueue()
         die("kevent: listen_sock");
     }
 
+    // 타이머 설정 (30초 주기로 이벤트 발생)
+    EV_SET(&change_list, 0, EVFILT_TIMER, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 30 * 1000, NULL);
+    if (kevent(_event_fd, &change_list, 1, NULL, 0, NULL) == -1)
+    {
+        die("kevent: timer");
+    }
+
     while (g_shutdown == false)
     {
         int n = kevent(_event_fd, NULL, 0, event_list, MAX_EVENTS, NULL);
@@ -325,6 +383,12 @@ void Server::setupKqueue()
                 }
                 Client new_client(client, _password, this);
                 _clients.insert(std::pair<int, Client>(client, new_client)); // 클라이언트 클래스 추가
+            }
+            else if (event_list[i].filter == EVFILT_TIMER)
+            {
+                // 타이머 이벤트 처리
+                pingClients(); // 클라이언트에게 핑 보내기
+                // 타이머를 다시 설정할 필요가 없습니다. `EVFILT_TIMER`는 자동으로 재설정됩니다.
             }
             else // 클라이언트 소켓에서 이벤트 발생
             {
@@ -397,25 +461,12 @@ void Server::setupKqueue()
                         ///////////////////////////////////////////////////////
                         cmd.clearCommand();
                         cmd.parseCommand(message);
-                        // cmd.showCommand();
                         tmp_client.execCommand(cmd, *this);
 
 						for(std::map<std::string, Channel>::iterator iter = _channels.begin() ; iter != _channels.end(); iter++)
 						{
 							iter->second.showChannelMembers(*this);
 						}
-                        // ssize_t sent_bytes = send(client, message.c_str(), message.size(), 0);
-                        // printf("Sent %ld bytes\n", sent_bytes);
-                        // if (sent_bytes < 0)
-                        // {
-                        //     perror("send");
-                        // }
-                        // else if (sent_bytes != static_cast<ssize_t>(message.size()))
-                        // {
-                        //     fprintf(stderr, "Warning: Not all data was sent.\n");
-                        // }
-                        // end of processing //////////////////////////////////
-                        ///////////////////////////////////////////////////////
                         data.erase(0, pos + (data[pos] == '\r' ? 2 : 1));  // Remove the processed message
                     }
                     // 남은 데이터를 leftover에 저장
@@ -435,8 +486,10 @@ void Server::stopKqueue()
         int client_fd = it->first;
         close(client_fd);
     }
-    close(_event_fd);
+    close(_event_fd); // kqueue는 이벤트fd를 닫으면 자동으로 모든 이벤트 감시를 제거함
 }
+
+#endif
 
 void    Server::cleanChans()
 {
@@ -449,5 +502,3 @@ void    Server::cleanChans()
 			++it;
     }
 }
-
-#endif
