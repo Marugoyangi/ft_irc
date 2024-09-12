@@ -2,7 +2,10 @@
 
 Channel::Channel() {}
 
-Channel::Channel(std::string myname) : _channel_name(myname), _topic(""), _topic_time(0), _mode(0), _key(""), _limit(-1){}
+Channel::Channel(std::string myname) : _channel_name(myname), _topic(""), _topic_time(0), _mode(0b00000000), _key(""), _limit(-1)
+{
+	std::cout << "\033[32mChannel Created \033[0m" << std::endl;  //Debug
+}
 
 Channel::~Channel() 
 {
@@ -21,6 +24,10 @@ Channel &Channel::operator=(const Channel &other)
 	_channel_name = other._channel_name;
 	for (int i = 0 ; i < (int)other._fdlist.size(); i++)
 		_fdlist.push_back(other._fdlist[i]);
+	for (std::set<std::string>::iterator it = other._operators.begin(); it != other._operators.end(); it++)
+		_operators.insert(*it);
+	for (std::set<std::string>::iterator it = other._invited_list.begin(); it != other._invited_list.end(); it++)
+		_invited_list.insert(*it);
 	return (*this);
 }
 
@@ -167,7 +174,7 @@ bool Channel::isOperator(const Client &client) const
 	if (_operators.find(client.getNickname()) == _operators.end())
 		std::cout << "not operator" << std::endl;
 	else
-		std::cout << "operator" << std::endl;
+		std::cout << "is operator" << std::endl;
 	return _operators.find(client.getNickname()) != _operators.end();
 }
 

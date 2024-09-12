@@ -84,6 +84,10 @@ void CommandHandler::join(Command &cmd, Client &client, Server &server)
 			}
 			channels[channel_name].addClient(client);
 			channels[channel_name].setOperator(client, true); // 채널 최초 생성시 관리자 지정
+			channels[channel_name].unsetMode(MODE_I);
+			channels[channel_name].unsetMode(MODE_L);
+			channels[channel_name].unsetMode(MODE_T);
+			channels[channel_name].unsetMode(MODE_K);
 			std::string operator_msg = ":irc.local MODE " + channel_name + " +o " + client.getNickname() + "\r\n";
 			send(client.getSocket_fd(), operator_msg.c_str(), operator_msg.length(), 0);
 		}
