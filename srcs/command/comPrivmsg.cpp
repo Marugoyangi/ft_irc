@@ -20,7 +20,6 @@ void CommandHandler::privmsg(Command const &cmd, Client const &client, Server &s
 
     std::string target_list = params[0];
     std::string message = params[1];
-
     std::vector<std::string> targets;
     size_t pos = 0;
     while ((pos = target_list.find(',')) != std::string::npos)
@@ -99,14 +98,20 @@ void CommandHandler::privmsg(Command const &cmd, Client const &client, Server &s
                 {
                     user_found = true;
                     Client &recipient = it->second;
-                    // 메시지의 마지막 부분이 DCC로 시작하는지 확인
-                    if (message.find("DCC "))
+                    std::string trimmed_message = message;
+                    if (!trimmed_message.empty() && trimmed_message[0] == '\x01') {
+                        trimmed_message.erase(0, 1); // ASCII 코드 1 제거
+                    }
+                    // 메시지의 마지막 부분이 DCC로 시작하는지 확인                    
+                    if (trimmed_message.size() > 4 && trimmed_message.substr(0, 4) == "DCC ")
                     {
-                        
-                        if (!handleDCCCommand(message, client, server))
+                        std::cout << "DCC Message: " << trimmed_message << std::endl;
+                        if (!handleDCCCommand(trimmed_message, client, server))
                             return;
                     }
-                    std::string full_msg = client.getSource() + " PRIVMSG " + target + " :" + message + "\r\n";
+                    else
+                        std::cout << "not DCC Message: " << trimmed_message << std::endl;
+                    std::string full_msg = client.getSource() + " PRIVMSG " + target + " :" + trimmed_message + "\r\n";
                     std::cout << "Full message: " << full_msg << std::endl;
                     send(recipient.getSocket_fd(), full_msg.c_str(), full_msg.length(), 0);
                     break;
@@ -134,6 +139,10 @@ bool CommandHandler::handleDCCCommand(std::string const &message, Client const &
         end = message.find(" ", start);
     }
     params.push_back(message.substr(start));
+    if (params.size() < 6)
+    {
+        return false;
+    }
     std::cout << "DCC command: " << params[0] << " " << params[1] << std::endl;
     if (params[1] == "SEND")
     {
