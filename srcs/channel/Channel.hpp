@@ -21,6 +21,8 @@ class Channel
 		std::string			_channel_name;
 		std::string			_topic;
 		time_t				_topic_time;
+		std::string			_topic_setter;
+		std::string			_topic_setter_source;
 		std::set<std::string> _operators;
 		std::vector<int>	_fdlist;
 		int					_mode;
@@ -53,7 +55,6 @@ class Channel
     	void 	messageToMembers(Client const &client, std::string cmd, std::string param);
 		void	messageToMembersIncludeSelf(Client const &client, std::string cmd, std::string param);
 		void	botmessageToMembers(std::string msg) const;
-		Client* getClient(const std::string &nickname);
 
 		void	setMode(int mode);
 		void	unsetMode(int mode);
@@ -64,7 +65,9 @@ class Channel
 		int		getLimit() const;
 		bool	checkInvitedList(Client &client);
 		void	addInvitedList(std::string client_name);
-		void	setTopicTime(time_t time);
+		void	setTopicTime(time_t time, std::string topic_setter, std::string source);
+		std::string getTopicSetter() const;
+		std::string getTopicSetterSource() const;
 		std::vector<int> &getFdList();
 
 		void	showChannelMembers(Server &server);  // for Debug

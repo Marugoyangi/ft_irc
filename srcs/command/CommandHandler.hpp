@@ -55,6 +55,6 @@ class CommandHandler
     void    topic(Command const &cmd, Client const &client, Server &server);
         void    com353(Server &server, Channel &channels);                            //RPL_NAMREPLY
         void    com366(Client const &client, std::string const &channel_name);              //RPL_ENDOFNAMES
-        void    com332(Client const &client, std::string topic);   //RPL_TOPIC
+        void    com332(std::string topic, Channel &channel, Client &client); //RPL_TOPIC
 };
 #endif

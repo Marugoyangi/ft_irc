@@ -117,7 +117,8 @@ void CommandHandler::topic(Command const &cmd, Client const &client, Server &ser
         std::string topic = params[1];
         std::cout << "topic: " << topic << std::endl;
         channel.setChannelTopic(topic);
-        channel.setTopicTime(time(NULL));
+        std::string source = client.getUsername() + "@" + client.getHostname();
+        channel.setTopicTime(time(NULL), client.getNickname(), source);
         // TOPIC 메시지 전송
         // std::string mode_msg = ":irc.local TOPIC " + channel.getChannelName() + " " + topic + "\r\n";
         // send(client.getSocket_fd(), mode_msg.c_str(), mode_msg.length(), 0);
@@ -126,11 +127,12 @@ void CommandHandler::topic(Command const &cmd, Client const &client, Server &ser
     }
 }
 
-void CommandHandler::com332(Client const &client, std::string topic)
+void CommandHandler::com332(std::string topic, Channel &channel, Client &client)
 {
     std::stringstream ss;
-
-    ss << time(NULL); 
-    _reply += ":irc.local 332 " + client.getNickname() + " " + topic + " :" + topic + "\r\n";
-    _reply += ":irc.local 333 " + client.getNickname() + " " + topic + " " + client.getSource() + " :" + ss.str() + "\r\n";
+    std::string topic_setter = channel.getTopicSetter() + "!" + channel.getTopicSetterSource();
+    
+    ss << channel.getTopicTime();
+    _reply += ":irc.local 332 " + client.getNickname() + " " + channel.getChannelName() + " :" + topic + "\r\n";
+    _reply += ":irc.local 333 " + client.getNickname() + " " + channel.getChannelName() + " " + topic_setter + " " + ss.str() + "\r\n";
 }

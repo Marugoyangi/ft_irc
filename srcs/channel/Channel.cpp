@@ -178,13 +178,6 @@ bool Channel::isOperator(const Client &client) const
 	return _operators.find(client.getNickname()) != _operators.end();
 }
 
-Client* Channel::getClient(const std::string &nickname)
-{
-	// need fix
-	(void)nickname;
-	return NULL;
-}
-
 void Channel::setMode(int mode)
 {
 	_mode |= mode;
@@ -236,9 +229,11 @@ bool Channel::checkInvitedList(Client &client)
     return false;
 }
 
-void Channel::setTopicTime(time_t time)
+void Channel::setTopicTime(time_t time, std::string topic_setter, std::string source)
 {
 	_topic_time = time;
+	_topic_setter = topic_setter;
+	_topic_setter_source = source;
 }
 
 std::vector<int> &Channel::getFdList()
@@ -254,4 +249,13 @@ void Channel::botmessageToMembers(std::string msg) const
 		send(_fdlist[i], msg.c_str(), msg.length(), 0);
 	}
 }
-	
+
+std::string Channel::getTopicSetter() const
+{
+	return _topic_setter;
+}
+
+std::string Channel::getTopicSetterSource() const
+{
+	return _topic_setter_source;
+}
