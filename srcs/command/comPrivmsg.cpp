@@ -111,7 +111,7 @@ void CommandHandler::privmsg(Command const &cmd, Client const &client, Server &s
                     }
                     else
                         std::cout << "not DCC Message: " << trimmed_message << std::endl;
-                    std::string full_msg = client.getSource() + " PRIVMSG " + target + " :" + trimmed_message + "\r\n";
+                    std::string full_msg = client.getSource() + " PRIVMSG " + target + " :" + message + "\r\n";
                     std::cout << "Full message: " << full_msg << std::endl;
                     send(recipient.getSocket_fd(), full_msg.c_str(), full_msg.length(), 0);
                     break;

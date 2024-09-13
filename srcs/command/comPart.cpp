@@ -40,5 +40,6 @@ void CommandHandler::part(Command &cmd, Client &client, std::map<std::string, Ch
 		channels[channel_name].messageToMembers(client, "PART", channel_name);
 		channels[channel_name].removeClient(client.getSocket_fd());
 		channels[channel_name].removeOperator(client.getNickname());
+		channels[channel_name].removeInvited(client.getNickname());
 	}
 }
