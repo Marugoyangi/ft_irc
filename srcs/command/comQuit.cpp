@@ -11,5 +11,4 @@ void	CommandHandler::quit(Command &cmd, Client &client, std::map<std::string, Ch
 
 	(void)channels;
 	client.setDisconnectMessage(msg);
-	shutdown(client.getSocket_fd(), SHUT_RD);
 }

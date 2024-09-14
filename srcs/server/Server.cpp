@@ -84,11 +84,11 @@ void Server::pingClients()
         if (it->second.getIs_registered() == false)
         {
             std::cout << "not registered" << std::endl;
-            if (difftime(time(NULL), it->second.getEstablished_time()) > 30)
+            if (time(NULL) - it->second.getLast_active_time() > 30)
             {
                 std::cout << "Client " << it->first << " has timed out" << std::endl;
                 std::cout << "register failed" << std::endl;
-	            shutdown(it->first, SHUT_RD);
+	            close(it->first);
                 continue;
             }
         }
@@ -96,7 +96,7 @@ void Server::pingClients()
         {
             std::cout << "Client " << it->first << " has timed out" << std::endl;
             std::cout << "ping failed" << std::endl;
-            shutdown(it->first, SHUT_RD);
+            close(it->first);
             continue;
         }
         std::string ping_msg = ":" + _server_name + " PING " + it->second.getNickname() + "\r\n";
@@ -125,7 +125,7 @@ void Server::setupSocket()
     if (_server_fd == -1)
         die("socket");
     // set socket options to reuse address and port
-    if (setsockopt(_server_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
+    if (setsockopt(_server_fd, SOL_SOCKET, SO_REUSEADDR | SO_KEEPALIVE, &yes, sizeof(int)) == -1)
         die("setsockopt");
     // bind socket to port
     if (bind(_server_fd, res->ai_addr, res->ai_addrlen) == -1)
@@ -204,9 +204,8 @@ void Server::setupEpoll()
                     perror("accept");
                     continue;
                 }
-                // Set the client socket timeout to 15 seconds
-                struct timeval tv = {15, 0};
-                if (setsockopt(client, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv) < 0)
+                int optval = 1;
+                if (setsockopt(client, SOL_SOCKET, SO_REUSEADDR | SO_KEEPALIVE, &optval, sizeof(optval)) == -1)
                     die("setsockopt");
                 // Set the client socket to non-blocking mode
                 if (fcntl(client, F_SETFL, O_NONBLOCK) == -1)
