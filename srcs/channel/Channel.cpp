@@ -243,10 +243,11 @@ std::vector<int> &Channel::getFdList()
 
 void Channel::botmessageToMembers(std::string msg) const
 {
-	std::cout << msg << std::endl;
+	// std::cout << msg << std::endl;
 	for (int i = 0; i < (int)_fdlist.size(); i++)
 	{
 		send(_fdlist[i], msg.c_str(), msg.length(), 0);
+		std::cout << "\033[01m\033[33mmessage to client " << _fdlist[i] << ": "  << msg << "\033[0m" << std::endl;
 	}
 }
 
