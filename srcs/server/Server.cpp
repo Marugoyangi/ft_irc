@@ -125,7 +125,7 @@ void Server::setupSocket()
     if (_server_fd == -1)
         die("socket");
     // set socket options to reuse address and port
-    if (setsockopt(_server_fd, SOL_SOCKET, SO_REUSEADDR | SO_KEEPALIVE, &yes, sizeof(int)) == -1)
+    if (setsockopt(_server_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
         die("setsockopt");
     // bind socket to port
     if (bind(_server_fd, res->ai_addr, res->ai_addrlen) == -1)
