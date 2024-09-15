@@ -101,6 +101,7 @@ void Server::pingClients()
         }
         std::string ping_msg = ":" + _server_name + " PING " + it->second.getNickname() + "\r\n";
         send(it->first, ping_msg.c_str(), ping_msg.length(), 0);
+        std::cout << "\033[01m\033[33mmessage to client " << it->first << ": "  << ping_msg << "\033[0m" << std::endl;
     }
 }
 
