@@ -146,7 +146,6 @@ void Server::setupEpoll()
     struct epoll_event ev;
     struct epoll_event events[MAX_EVENTS];
     std::string buffer;
-    std::string leftover;
     Command     cmd;        // 명령어 임시 저장소
 
     setupSocket();
@@ -293,9 +292,6 @@ void Server::setupEpoll()
                 else
                 {
                     buffer.resize(bytes_received);
-                    leftover.clear();
-                    std::string data = leftover + buffer;
-
                     size_t pos;
                     std::map<int, Client>::iterator it = _clients.find(client);
                     Client &tmp_client = it->second;
@@ -303,6 +299,8 @@ void Server::setupEpoll()
                         tmp_client = it->second;
                     else
                         continue; // 이게 가능한 얘긴가?
+                    std::string data = tmp_client.getLeftover() + buffer;
+                    tmp_client.setLeftover("");
                     while ((pos = data.find("\r\n")) != std::string::npos || (pos = data.find("\n")) != std::string::npos)
                     {
                         std::string message = data.substr(0, pos);
@@ -315,7 +313,7 @@ void Server::setupEpoll()
                         data.erase(0, pos + (data[pos] == '\r' ? 2 : 1));  // Remove the processed message
                     }
                     // Remaining data is saved in leftover
-                    leftover = data;
+                    tmp_client.setLeftover(data);
                 }
             }
         }

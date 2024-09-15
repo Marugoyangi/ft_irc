@@ -11,6 +11,7 @@ class Client
 {
 	private:
 		Server 			*_server;
+		std::string	_leftover;
 		bool		_is_registered;
 		bool		_is_passed;
 		time_t		_established_time;
@@ -51,6 +52,7 @@ class Client
 		void	setEstablished_time(time_t established_time);
 		void	setLast_active_time(time_t last_active_time);
 		void	setDisconnectMessage(std::string message);
+		void	setLeftover(std::string leftover);
 		std::string	getDisconnectMessage() const;
 		std::string	getNickname() const;
 		std::string	getUsername() const;
@@ -66,6 +68,7 @@ class Client
 		time_t		getEstablished_time() const;
 		time_t		getLast_active_time() const;
 		Server		*getServer() const;
+		std::string	getLeftover() const;
 		void 		setInvisibleMode(bool enable); // invisible mode 설정
     	bool 		isInvisible() const; // invisible mode 값 확인
 

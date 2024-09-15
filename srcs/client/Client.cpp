@@ -25,6 +25,7 @@ Client &Client::operator=(const Client &other)
     _password = other._password;
     _socket_fd = other._socket_fd;
     disconnect_message = other.disconnect_message;
+    _leftover = other._leftover;
     return (*this);
 }
 
@@ -44,6 +45,7 @@ Client::Client(int fd, std::string password, Server *server)
     _try_password = "";
     _socket_fd = fd;
     disconnect_message = "Connection closed";
+    _leftover = "";
 }
 
 void Client::execCommand(Command &cmd, Server &server)
@@ -233,4 +235,14 @@ void Client::showClient()
 Server *Client::getServer() const
 {
     return _server;
+}
+
+std::string Client::getLeftover() const
+{
+    return _leftover;
+}
+
+void Client::setLeftover(std::string leftover)
+{
+    _leftover = leftover;
 }
