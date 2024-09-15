@@ -292,8 +292,8 @@ void Server::setupEpoll()
                 else
                 {
                     buffer.resize(bytes_received);
-                    std::string data = leftover + buffer;
                     leftover.clear();
+                    std::string data = leftover + buffer;
 
                     size_t pos;
                     std::map<int, Client>::iterator it = _clients.find(client);
@@ -470,8 +470,8 @@ void Server::setupKqueue()
                 else
                 {
                     buffer.resize(bytes_received);
-                    std::string data = leftover + buffer;
                     leftover.clear();
+                    std::string data = leftover + buffer;
                     
                     size_t pos;
                     std::map<int, Client>::iterator it = _clients.find(client);
