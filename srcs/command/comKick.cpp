@@ -53,17 +53,17 @@ void	CommandHandler::kick(Command &cmd, Client &client, Server &server)
 		}
 		else if (target_fd == -1)
 		{
-			_reply += "irc.local 401 " + client.getNickname() + " " + user_name + " :No such nick\r\n";
+			_reply += ":irc.local 401 " + client.getNickname() + " " + user_name + " :No such nick\r\n";
 			continue;
 		}
 		else if (!channels.at(channel_name).isMember(target_fd))
 		{
-			_reply += "irc.local 441 " + client.getNickname() + " " + user_name + +" " + channel_name + " :They are not on that channel\r\n";
+			_reply += ":irc.local 441 " + client.getNickname() + " " + user_name + +" " + channel_name + " :They are not on that channel\r\n";
 			continue;
 		}
 		else if (!channels.at(channel_name).isOperator(client))
 		{
-			_reply += "irc.local 482 " + client.getNickname() + " " + channel_name + " :You must be a channel op or higher to kick a more privileged user.\r\n";
+			_reply += ":irc.local 482 " + client.getNickname() + " " + channel_name + " :You must be a channel op or higher to kick a more privileged user.\r\n";
 			continue;
 		}
 		channels.at(channel_name).messageToMembersIncludeSelf(client, "KICK " + channel_name + " " + user_name, message);
