@@ -29,6 +29,7 @@ class Channel
 		std::string			_key;
 		int					_limit;
 		std::set<std::string> _invited_list;
+		Server				*_server;
 
 	public :
 		Channel();
@@ -36,7 +37,7 @@ class Channel
 		Channel &operator=(const Channel &other);
 		Channel(const Channel &other);
 
-		Channel(std::string myname);
+		Channel(std::string myname, Server &server);
 		
 		std::string	getChannelName() const;
 		std::string	getChannelMembers(Channel const &channel, Server &server) const;
@@ -45,10 +46,11 @@ class Channel
 
 		void	setChannelTopic(std::string name);
 		bool	isMember(int fd) const;
-		int		addClient(Client client);
+		int		addClient(Client &client);
 		void	removeClient(int fd);
 		void	removeOperator(std::string nickname);
 		void	removeInvited(std::string nickname);
+		bool 	isInvited(std::string nickname);
 
 		void 	setOperator(Client &client, bool enable);
     	bool 	isOperator(const Client &client) const;
@@ -56,6 +58,7 @@ class Channel
 		void	messageToMembersIncludeSelf(Client const &client, std::string cmd, std::string param);
 		void	botmessageToMembers(std::string msg) const;
 
+		Server &getServer() const;
 		void	setMode(int mode);
 		void	unsetMode(int mode);
 		bool	isMode(int mode) const;	

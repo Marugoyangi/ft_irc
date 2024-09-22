@@ -69,7 +69,7 @@ void CommandHandler::privmsg(Command const &cmd, Client const &client, Server &s
 				{
 					mask_found = true;
 					std::string full_msg = ":" + client.getNickname() + " PRIVMSG " + target + " :" + message + "\r\n";
-					send(recipient.getSocket_fd(), full_msg.c_str(), full_msg.length(), 0);
+					_reply += full_msg;
 				}
 				
 				// 서버 마스크 처리: 서버에 연결된 클라이언트의 서버명이 마스크와 일치하는지 확인
@@ -77,7 +77,7 @@ void CommandHandler::privmsg(Command const &cmd, Client const &client, Server &s
 				{
 					mask_found = true;
 					std::string full_msg = ":" + client.getNickname() + " PRIVMSG " + target + " :" + message + "\r\n";
-					send(recipient.getSocket_fd(), full_msg.c_str(), full_msg.length(), 0);
+					_reply += full_msg;
 				}
 			}
 			if (!mask_found)
@@ -97,7 +97,6 @@ void CommandHandler::privmsg(Command const &cmd, Client const &client, Server &s
                 if (it->second.getNickname() == target)
                 {
                     user_found = true;
-                    Client &recipient = it->second;
                     std::string trimmed_message = message;
                     if (!trimmed_message.empty() && trimmed_message[0] == '\x01') {
                         trimmed_message.erase(0, 1); // ASCII 코드 1 제거
@@ -113,7 +112,7 @@ void CommandHandler::privmsg(Command const &cmd, Client const &client, Server &s
                         std::cout << "not DCC Message: " << trimmed_message << std::endl;
                     std::string full_msg = client.getSource() + " PRIVMSG " + target + " :" + message + "\r\n";
                     std::cout << "Full message: " << full_msg << std::endl;
-                    send(recipient.getSocket_fd(), full_msg.c_str(), full_msg.length(), 0);
+                    _reply += full_msg;
                     break;
                 }
             }

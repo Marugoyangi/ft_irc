@@ -59,7 +59,7 @@ void CommandHandler::invite(Command &cmd, Client &client, Server &server)
     // 초대 처리
     channel.addInvitedList(client_name);
     std::string invite_msg = ":" + client.getNickname() + " INVITE " + client_name + " " + channel_name + "\r\n";
-    send(it->first, invite_msg.c_str(), invite_msg.length(), 0);
+    it->second.getHandler().addReply(invite_msg);
     _reply += ":irc.local 341 " + client.getNickname() + " " + client_name + " " + channel_name + "\r\n";
 }
 
@@ -119,10 +119,6 @@ void CommandHandler::topic(Command const &cmd, Client const &client, Server &ser
         channel.setChannelTopic(topic);
         std::string source = client.getUsername() + "@" + client.getHostname();
         channel.setTopicTime(time(NULL), client.getNickname(), source);
-        // TOPIC 메시지 전송
-        // std::string mode_msg = ":irc.local TOPIC " + channel.getChannelName() + " " + topic + "\r\n";
-        // send(client.getSocket_fd(), mode_msg.c_str(), mode_msg.length(), 0);
-	    // channel.messageToMembersIncludeSelf(client, "TOPIC " + channel.getChannelName() + " " + topic, "");
 	    channel.messageToMembersIncludeSelf(client, "TOPIC " + channel.getChannelName(), topic);
     }
 }

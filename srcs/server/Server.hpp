@@ -22,9 +22,10 @@
 #include <sstream>
 #include <iterator>
 #include "../command/Command.hpp"
-#include "../command/CommandHandler.hpp"
 #include "../client/Client.hpp"
+#include "../command/CommandHandler.hpp"
 #include "../channel/Channel.hpp"
+
 
 #ifdef __APPLE__
 #include <sys/event.h>

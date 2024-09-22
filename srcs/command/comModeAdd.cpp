@@ -15,7 +15,7 @@ void CommandHandler::handleChannelInviteMode(Channel &channel, Client &client, s
     // 모드 변경 메시지
 	std::string mode_str = add ? "+i" : "-i";
 	std::string mode_msg = ":irc.local MODE " + channel.getChannelName() + " " + mode_str + "\r\n";
-    send(client.getSocket_fd(), mode_msg.c_str(), mode_msg.length(), 0);
+    _reply += mode_msg;
 	channel.messageToMembers(client, "MODE " + channel.getChannelName() + " " + mode_str, "");
 }
 
@@ -41,7 +41,7 @@ void CommandHandler::handleChannelKeyMode(Channel &channel, Client &client, std:
     // 모드 변경 메시지
     std::string mode_str = add ? "+k" : "-k";
     std::string mode_msg = ":irc.local MODE " + channel.getChannelName() + " " + mode_str + "\r\n";
-    send(client.getSocket_fd(), mode_msg.c_str(), mode_msg.length(), 0);
+    _reply += mode_msg;
 	channel.messageToMembers(client, "MODE " + channel.getChannelName() + " " + mode_str, "");
 }
 
@@ -71,7 +71,7 @@ void  CommandHandler::handleChannelLimitMode(Channel &channel, Client &client, s
     if (add)
         mode_str += " " + params[2];
     std::string mode_msg = ":irc.local MODE " + channel.getChannelName() + " " + mode_str + "\r\n";
-    send(client.getSocket_fd(), mode_msg.c_str(), mode_msg.length(), 0);
+    _reply += mode_msg;
 	channel.messageToMembers(client, "MODE " + channel.getChannelName() + " " + mode_str, "");
 }
 
@@ -90,6 +90,6 @@ void CommandHandler::handleChannelTopicMode(Channel &channel, Client &client, st
     // 모드 변경 메시지
     std::string mode_str = add ? "+t" : "-t";
     std::string mode_msg = ":irc.local MODE " + channel.getChannelName() + " " + mode_str + "\r\n";
-    send(client.getSocket_fd(), mode_msg.c_str(), mode_msg.length(), 0);
+    _reply += mode_msg;
 	channel.messageToMembers(client, "MODE " + channel.getChannelName() + " " + mode_str, "");
 }

@@ -50,7 +50,7 @@ void CommandHandler::handleChannelOperatorMode(Channel &channel, Client &client,
     std::string mode_str = add ? "+o" : "-o";
     std::string operator_msg = ":" + client.getNickname() + " MODE " + channel.getChannelName() + \
     " " + mode_str + " " + client_name + "\r\n";
-    send(client.getSocket_fd(), operator_msg.c_str(), operator_msg.length(), 0);
+    _reply += operator_msg;
     channel.messageToMembers(client, "MODE " + channel.getChannelName() + " " + mode_str + " " + client_name, "");
 }
 

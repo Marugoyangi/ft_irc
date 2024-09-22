@@ -3,28 +3,29 @@
 
 # include "../server/Server.hpp"
 # include "../client/Client.hpp"
-# include "../command/Command.hpp"
-# include "../channel/Channel.hpp"
 # include "../channel/Channel.hpp"
 
+class Command;
 class CommandHandler
 {
     private:
         Client  *_client;
         std::string _reply;
     public:
+        CommandHandler();
         CommandHandler(Client *client);
         ~CommandHandler();
         CommandHandler(const CommandHandler &other);
         CommandHandler &operator=(const CommandHandler &other);
 
         void execute(Command &cmd, Client &client, Server &server);
-
         void reply(int numeric, std::string param, std::string message);
         void reply(std::string const &command, std::vector<std::string> const &message);
         void reply(std::string const &command, std::string const &message);
-	void reply(Client &client, const char* numeric, const std::string &channel_name, const std::string &message);
-
+	    void reply(Client &client, const char* numeric, const std::string &channel_name, const std::string &message);
+        void setReply(std::string const &reply);
+        std::string getReply() const;
+        void addReply(std::string const &reply);
         // all those commands
         void pass(Command &cmd, Client &client);
         void nick(Command &cmd, Client &client);

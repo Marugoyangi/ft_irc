@@ -1,41 +1,20 @@
 #include "Client.hpp"
 
-Client::~Client() {}
-
-Client::Client(const Client &other)
-{
-    (*this)._server = other._server;
-    *this = other;
+Client::~Client() {
+    if (_handler)
+    {
+        delete _handler;
+        _handler = NULL;
+    }
 }
-
-Client &Client::operator=(const Client &other)
-{
-    if (this == &other)
-        return (*this);
-    _server = other._server;
-    _is_registered = other._is_registered;
-    _is_passed = other._is_passed;
-    _established_time = other._established_time;
-    _last_active_time = other._last_active_time;
-    _username = other._username;
-    _hostname = other._hostname;
-    _realname = other._realname;
-    _mode = other._mode;
-    _ip = other._ip;
-    _password = other._password;
-    _socket_fd = other._socket_fd;
-    disconnect_message = other.disconnect_message;
-    _leftover = other._leftover;
-    return (*this);
-}
-
-Client::Client(int fd, std::string password, Server *server)
+Client::Client(int fd, std::string password, Server *server) : _handler(new CommandHandler(this))
 {
     _server = server;
     _is_registered = false;
     _is_passed = false;
     _established_time = time(NULL);
     _last_active_time = time(NULL);
+    _nickname = "";
     _username = "";
     _hostname = "";
     _realname = "";
@@ -48,10 +27,42 @@ Client::Client(int fd, std::string password, Server *server)
     _leftover = "";
 }
 
+Client::Client(const Client &other) : _handler(NULL)
+{
+    *this = other;
+}
+
+Client &Client::operator=(const Client &other)
+{
+    if (this == &other)
+        return (*this);
+    _server = other._server;
+    _leftover = other._leftover;
+    _is_registered = other._is_registered;
+    _is_passed = other._is_passed;
+    _established_time = other._established_time;
+    _last_active_time = other._last_active_time;
+    _nickname = other._nickname;
+    _username = other._username;
+    _realname = other._realname;
+    _hostname = other._hostname;
+    _mode = other._mode;
+    _ip = other._ip;
+    _password = other._password;
+    _try_password = other._try_password;
+    _socket_fd = other._socket_fd;
+    disconnect_message = other.disconnect_message;
+    if (_handler)
+    {
+        delete _handler;
+    }
+    _handler = new CommandHandler(this);
+    return (*this);
+}
+
 void Client::execCommand(Command &cmd, Server &server)
 {
-    CommandHandler handler(this);
-    handler.execute(cmd, *this, server);
+    _handler->execute(cmd, *this, server);
 }
 
 std::string	Client::getSource() const
@@ -245,4 +256,9 @@ std::string Client::getLeftover() const
 void Client::setLeftover(std::string leftover)
 {
     _leftover = leftover;
+}
+
+CommandHandler &Client::getHandler()
+{
+    return *_handler;
 }

@@ -3,7 +3,6 @@
 
 # include "../server/Server.hpp"
 
-class Client;
 class Command 
 {
 	private:

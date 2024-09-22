@@ -2,7 +2,7 @@
 
 Channel::Channel() {}
 
-Channel::Channel(std::string myname) : _channel_name(myname), _topic(""), _topic_time(0), _mode(0b00000000), _key(""), _limit(-1)
+Channel::Channel(std::string myname, Server &server) : _channel_name(myname), _topic(""), _topic_time(0), _mode(0b00000000), _key(""), _limit(-1), _server(&server)
 {
 	std::cout << "\033[32mChannel Created \033[0m" << std::endl;  //Debug
 	_operators.insert("BOT");
@@ -29,6 +29,14 @@ Channel &Channel::operator=(const Channel &other)
 		_operators.insert(*it);
 	for (std::set<std::string>::iterator it = other._invited_list.begin(); it != other._invited_list.end(); it++)
 		_invited_list.insert(*it);
+	_topic = other._topic;
+	_topic_time = other._topic_time;
+	_topic_setter = other._topic_setter;
+	_topic_setter_source = other._topic_setter_source;
+	_mode = other._mode;
+	_key = other._key;
+	_limit = other._limit;
+	_server = other._server;
 	return (*this);
 }
 
@@ -66,7 +74,7 @@ bool	Channel::isMember(int fd) const
 	return (false);
 }
 
-int	Channel::addClient(Client client)
+int	Channel::addClient(Client &client)
 {
 	for (int i = 0; i < (int)_fdlist.size() ; i++)
 	{
@@ -132,7 +140,7 @@ void	Channel::messageToMembers(Client const &client, std::string cmd, std::strin
 			continue;
 		std::cout << "\033[01m\033[33mmessage to client " << _fdlist[i] << ": "  << msg << "\033[0m" << std::endl; // debug
 		if (isMember(_fdlist[i]))
-			send(_fdlist[i], msg.c_str(), msg.length(), 0);
+			_server->getClients().at(_fdlist[i]).getHandler().addReply(msg);
 	}
 }
 
@@ -145,7 +153,7 @@ void	Channel::messageToMembersIncludeSelf(Client const &client, std::string cmd,
 	{
 		std::cout << "\033[01m\033[33mmessage to client " << _fdlist[i] << ": "  << msg << "\033[0m" << std::endl; // debug
 		if (isMember(_fdlist[i]))
-			send(_fdlist[i], msg.c_str(), msg.length(), 0);
+			_server->getClients().at(_fdlist[i]).getHandler().addReply(msg);
 	}
 }
 
@@ -213,6 +221,11 @@ int Channel::getLimit() const
 	return _limit;
 }
 
+Server &Channel::getServer() const
+{
+	return *_server;
+}
+
 void	Channel::addInvitedList(std::string client_name)
 {
 	_invited_list.insert(client_name);
@@ -243,11 +256,13 @@ std::vector<int> &Channel::getFdList()
 
 void Channel::botmessageToMembers(std::string msg) const
 {
-	// std::cout << msg << std::endl;
 	for (int i = 0; i < (int)_fdlist.size(); i++)
 	{
-		send(_fdlist[i], msg.c_str(), msg.length(), 0);
-		std::cout << "\033[01m\033[33mmessage to client " << _fdlist[i] << ": "  << msg << "\033[0m" << std::endl;
+		if (isMember(_fdlist[i]))
+		{
+			_server->getClients().at(_fdlist[i]).getHandler().addReply(msg);
+			std::cout << "\033[01m\033[33mmessage to client " << _fdlist[i] << ": "  << msg << "\033[0m" << std::endl;
+		}
 	}
 }
 
@@ -259,4 +274,11 @@ std::string Channel::getTopicSetter() const
 std::string Channel::getTopicSetterSource() const
 {
 	return _topic_setter_source;
+}
+
+bool Channel::isInvited(std::string nickname)
+{
+	if (_invited_list.find(nickname) != _invited_list.end())
+		return true;
+	return false;
 }

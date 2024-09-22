@@ -76,7 +76,7 @@ void CommandHandler::join(Command &cmd, Client &client, Server &server)
 		}
 		else
 		{
-			channels.insert(std::pair<std::string, Channel>(channel_name, Channel(channel_name)));
+			channels.insert(std::pair<std::string, Channel>(channel_name, Channel(channel_name, server)));
 			if (key != "")
 			{
 				channels[channel_name].setKey(key);
@@ -89,7 +89,7 @@ void CommandHandler::join(Command &cmd, Client &client, Server &server)
 			channels[channel_name].unsetMode(MODE_T);
 			channels[channel_name].unsetMode(MODE_K);
 			std::string operator_msg = ":irc.local MODE " + channel_name + " +o " + client.getNickname() + "\r\n";
-			send(client.getSocket_fd(), operator_msg.c_str(), operator_msg.length(), 0);
+			_reply += operator_msg;
 		}
 		_reply += client.getSource() + " JOIN :" + channel_name + "\r\n";
 		std::cout << "join topic : " << channels[channel_name].getChannelTopic() << std::endl;

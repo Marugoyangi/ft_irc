@@ -1,5 +1,7 @@
 #include "CommandHandler.hpp"
 
+CommandHandler::CommandHandler() {}
+
 CommandHandler::CommandHandler(Client *client) : _client(client)
 {
 }
@@ -15,14 +17,17 @@ CommandHandler &CommandHandler::operator=(const CommandHandler &other)
 {
     if (this == &other)
         return (*this);
+    _client = other._client;
     return (*this);
 }
+
 
 void CommandHandler::execute(Command &cmd, Client &client, Server &server)
 {
     std::string command = cmd.getCommand();
     _reply = "";
-    
+    if (_reply != "")
+        _reply = "";
     if (client.getIs_registered() == false)
     {
         if (command == "CAP")
@@ -121,11 +126,6 @@ void CommandHandler::execute(Command &cmd, Client &client, Server &server)
     }
     // client.showClient();
     client.setLast_active_time(time(NULL));
-    if (_reply != "")
-    {
-        send(client.getSocket_fd(), _reply.c_str(), _reply.length(), 0);
-        std::cout << "\033[01m\033[33mmessage to client " << client.getSocket_fd() << ": "  << _reply << "\033[0m" << std::endl;
-    }
 }
 
 void CommandHandler::reply(int numeric, std::string param, std::string message)
@@ -179,3 +179,18 @@ void CommandHandler::reply(Client &client, const char* numeric, const std::strin
 }
 
 // all those commands
+
+void CommandHandler::setReply(std::string const &reply)
+{
+    _reply = reply;
+}
+
+std::string CommandHandler::getReply() const
+{
+    return _reply;
+}
+
+void CommandHandler::addReply(std::string const &reply)
+{
+    _reply += reply;
+}

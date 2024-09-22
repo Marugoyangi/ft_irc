@@ -29,7 +29,6 @@ void CommandHandler::botTime(Client const &client, Channel const &channel)
 void CommandHandler::botUptime(Client const &client, Channel const &channel)
 {
     time_t rawtime;
-    char buffer[80];
     std::string msg;
 
     msg = ":BOT!~Bot@irc.local PRIVMSG " + channel.getChannelName() + \
@@ -40,8 +39,9 @@ void CommandHandler::botUptime(Client const &client, Channel const &channel)
     int hours = (rawtime % 86400) / 3600;
     int minutes = (rawtime % 3600) / 60;
     int seconds = rawtime % 60;
-    snprintf(buffer, 80, "%d days, %d hours, %d minutes, %d seconds", days, hours, minutes, seconds);
-    msg += buffer;
+    std::stringstream ss;
+    ss << days << " days, " << hours << " hours, " << minutes << " minutes, " << seconds << " seconds";
+    msg += ss.str();
     msg += "\r\n";
     channel.botmessageToMembers(msg);
 }

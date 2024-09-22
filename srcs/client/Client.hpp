@@ -2,11 +2,11 @@
 # define CLIENT_HPP
 
 # include "../server/Server.hpp"
+# include "../command/Command.hpp"
 # include "../channel/Channel.hpp"
 
 class CommandHandler;
 class Command;
-class Server;
 class Client
 {
 	private:
@@ -26,13 +26,13 @@ class Client
 		std::string	_try_password;
 		int			_socket_fd;
 		std::string disconnect_message;
-
+		CommandHandler *_handler;
 	
 	public:
 		Client(int fd, std::string password, Server *server);
 		~Client();
 		Client(const Client &other);
-		Client &operator=(const Client &other);	
+		Client &operator=(const Client &other);
 		void	execCommand(Command &cmd, Server &server);
 
 		std::string	getSource() const;  //cline의 정보를 source로 만들어주는 함수
@@ -71,6 +71,7 @@ class Client
 		std::string	getLeftover() const;
 		void 		setInvisibleMode(bool enable); // invisible mode 설정
     	bool 		isInvisible() const; // invisible mode 값 확인
+		CommandHandler	&getHandler();
 
 		//debug
 
