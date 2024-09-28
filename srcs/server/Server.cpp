@@ -362,65 +362,46 @@ void Server::stopEpoll()
 #ifdef __APPLE__
 void Server::setupKqueue()
 {
-    struct kevent ev;
-    struct kevent events[MAX_EVENTS];
+    struct kevent change_list;
+    struct kevent event_list[MAX_EVENTS];
     std::string buffer;
-    Command cmd; // 명령어 임시 저장소
-    int pipe_fd[2];
-
+    std::string leftover;
+    Command     cmd;        // 명령어 임시 저장소
+    
     setupSocket();
-    if (pipe(pipe_fd) == -1)
-    {
-        die("pipe");
-    }
-    int kq = kqueue();
-    if (kq == -1) 
+
+    // kqueue 생성
+    _event_fd = kqueue();
+    if (_event_fd == -1)
     {
         die("kqueue");
     }
 
-    // 서버 소켓을 kqueue에 등록
-    EV_SET(&ev, _server_fd, EVFILT_READ, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, NULL);
-    if (kevent(kq, &ev, 1, NULL, 0, NULL) == -1) 
+    // 서버 소켓을 kqueue에 등록 (readable 이벤트)
+    EV_SET(&change_list, _server_fd, EVFILT_READ | EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
+
+    if (kevent(_event_fd, &change_list, 1, NULL, 0, NULL) == -1)
     {
         die("kevent: listen_sock");
     }
 
-    if (fcntl(pipe_fd[0], F_SETFL, O_NONBLOCK) == -1)
+    // 타이머 설정 (30초 주기로 이벤트 발생)
+    EV_SET(&change_list, 0, EVFILT_TIMER, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 30 * 1000, NULL);
+    if (kevent(_event_fd, &change_list, 1, NULL, 0, NULL) == -1)
     {
-        die("fcntl pipe_fd[0]");
-    }
-    EV_SET(&ev, pipe_fd[0], EVFILT_READ, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, NULL);
-    if (kevent(kq, &ev, 1, NULL, 0, NULL) == -1)
-    {
-        die("kevent: pipe_fd[0]");
+        die("kevent: timer");
     }
 
-    const int timer_duration = 30;
-    time_t start_time = time(NULL);
     while (g_shutdown == false)
     {
-        if (time(NULL) - start_time >= timer_duration)
-        {
-            int s = write(pipe_fd[1], "t", 1);
-            if (s == -1)
-            {
-                die("write pipe_fd[1]");
-            }
-            start_time = time(NULL);
-        }
-        struct timespec timeout;
-        timeout.tv_sec = 0;           // 0초
-        timeout.tv_nsec = 100000000;  // 100ms
-
-        int n = kevent(kq, NULL, 0, events, MAX_EVENTS, &timeout);
+        int n = kevent(_event_fd, NULL, 0, event_list, MAX_EVENTS, NULL);
         if (n == -1)
         {
-            die("kevent wait");
+            die("kevent");
         }
         for (int i = 0; i < n; ++i)
         {
-            if (events[i].ident == (unsigned int)_server_fd)
+            if (event_list[i].ident == (unsigned int)_server_fd)
             {
                 struct sockaddr_in client_addr;
                 socklen_t client_addr_len = sizeof(client_addr);
@@ -432,33 +413,33 @@ void Server::setupKqueue()
                     continue;
                 }
                 int optval = 1;
-                if (setsockopt(client, SOL_SOCKET, SO_REUSEADDR | SO_KEEPALIVE, &optval, sizeof(optval)) == -1)
+                if (setsockopt(client, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1)
                     die("setsockopt");
-                // 클라이언트 소켓을 비차단 모드로 설정
+                // 클라이언트 소켓을 non-blocking으로 설정
                 if (fcntl(client, F_SETFL, O_NONBLOCK) == -1)
                     die("fcntl");
-                // 새로운 클라이언트 소켓을 kqueue에 등록
-                EV_SET(&ev, client, EVFILT_READ | EVFILT_WRITE, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, NULL);
-                if (kevent(kq, &ev, 1, NULL, 0, NULL) == -1)
+                // 새 클라이언트 소켓을 kqueue에 등록 (readable 이벤트)
+                EV_SET(&change_list, client, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+                if (kevent(_event_fd, &change_list, 1, NULL, 0, NULL) == -1)
+                {
+                    die("kevent: client");
+                }
+                EV_SET(&change_list, client, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
+                if (kevent(_event_fd, &change_list, 1, NULL, 0, NULL) == -1)
                 {
                     die("kevent: client");
                 }
                 Client new_client(client, _password, this);
                 _clients.insert(std::pair<int, Client>(client, new_client)); // 클라이언트 클래스 추가
             }
-            else if (events[i].ident == (unsigned int)pipe_fd[0])
+            else if (event_list[i].filter == EVFILT_TIMER)
             {
-                char buf[1];
-                int s = read(pipe_fd[0], buf, 1);
-                if (s == -1)
-                {
-                    die("read timer_fd");
-                }
-                pingClients();
+                // 타이머 이벤트 처리
+                pingClients(); // 클라이언트에게 핑 보내기
             }
-            else if (events[i].filter == EVFILT_READ)
+            else if (event_list[i].filter == EVFILT_READ)
             {
-                int client = events[i].ident;
+                int client = event_list[i].ident;
                 buffer.resize(BUFFER_SIZE);
                 ssize_t bytes_received = recv(client, &buffer[0], BUFFER_SIZE - 1, 0);
                 if (bytes_received < 0)
@@ -469,32 +450,34 @@ void Server::setupKqueue()
                         continue ;
                     }
                     else
-                    {
                         perror("recv");
-                        close(client);
-                        std::cout << "Client closed connection." << std::endl;
-                        std::map<int, Client>::iterator it = _clients.find(client);
-                        if (it != _clients.end()) 
+                    close(client);
+                    std::cout << "Client closed connection." << std::endl;
+                    EV_SET(&change_list, client, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+                    kevent(_event_fd, &change_list, 1, NULL, 0, NULL);
+                    std::map<int, Client>::iterator it = _clients.find(client);
+                    if (it != _clients.end()) 
+                    {
+                        for (std::map<std::string, Channel>::iterator chan_it = _channels.begin(); chan_it != _channels.end(); chan_it++)
                         {
-                            for (std::map<std::string, Channel>::iterator chan_it = _channels.begin(); chan_it != _channels.end(); chan_it++)
+                            if (chan_it->second.isMember(it->second.getSocket_fd()))
                             {
-                                if (chan_it->second.isMember(it->second.getSocket_fd()))
-                                {
-                                    chan_it->second.removeClient(it->second.getSocket_fd());
-                                    chan_it->second.removeOperator(it->second.getNickname());
-                                    chan_it->second.removeInvited(it->second.getNickname());
-                                    chan_it->second.messageToMembers(it->second, "QUIT", it->second.getDisconnectMessage());
-                                }
+                                chan_it->second.removeClient(it->second.getSocket_fd());
+                                chan_it->second.removeOperator(it->second.getNickname());
+                                chan_it->second.removeInvited(it->second.getNickname());
+                                chan_it->second.messageToMembers(it->second, "QUIT", it->second.getDisconnectMessage());
                             }
-                            _clients.erase(it);
                         }
-                        cleanChans();
-                        std::cout << "client disconnected called from server read" << std::endl;
+                        _clients.erase(it);
                     }
+                    cleanChans();
+                    std::cout << "client disconnected called from server read" << std::endl;
                 }
                 else if (bytes_received == 0)
                 {
                     std::cout << "Client closed connection." << std::endl;
+                    EV_SET(&change_list, client, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+                    kevent(_event_fd, &change_list, 1, NULL, 0, NULL);
                     std::map<int, Client>::iterator it = _clients.find(client);
                     if (it != _clients.end()) 
                     {
@@ -538,10 +521,10 @@ void Server::setupKqueue()
                     it->second.setLeftover(data);
                 }
             }
-            else if (events[i].filter == EVFILT_WRITE)
+            else if (event_list[i].filter == EVFILT_WRITE)
             {
                 std::string _send;
-                int client = events[i].ident;
+                int client = event_list[i].ident;
                 std::map<int, Client>::iterator it = _clients.find(client);
                 if (it != _clients.end()) 
                 {
@@ -563,8 +546,6 @@ void Server::setupKqueue()
         }
     }
     stopKqueue(); // Clean up
-    close(pipe_fd[0]);
-    close(pipe_fd[1]);
 }
 
 void Server::stopKqueue()
