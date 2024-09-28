@@ -416,7 +416,7 @@ void Server::setupKqueue()
         }
         for (int i = 0; i < n; ++i)
         {
-            if (events[i].ident == _server_fd)
+            if (events[i].ident == (unsigned int)_server_fd)
             {
                 struct sockaddr_in client_addr;
                 socklen_t client_addr_len = sizeof(client_addr);
@@ -442,7 +442,7 @@ void Server::setupKqueue()
                 Client new_client(client, _password, this);
                 _clients.insert(std::pair<int, Client>(client, new_client)); // 클라이언트 클래스 추가
             }
-            else if (events[i].ident == pipe_fd[0])
+            else if (events[i].ident == (unsigned int)pipe_fd[0])
             {
                 char buf[1];
                 int s = read(pipe_fd[0], buf, 1);
