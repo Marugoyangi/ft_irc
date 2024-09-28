@@ -13,10 +13,7 @@ void	CommandHandler::quit(Command &cmd, Client &client, std::map<std::string, Ch
 	client.setDisconnectMessage(msg);
 	Server *server = client.getServer();
 	close(client.getSocket_fd());
-    std::cout << "Server closed connection." << std::endl;
-	#ifdef __APPLE__
-		kevent(server->getEventFd(), &change_list, 1, NULL, 0, NULL);
-	#endif
+	std::cout << "Server closed connection." << std::endl;
 	#ifdef __linux__
 		epoll_ctl(server->getEventFd(), EPOLL_CTL_DEL, client.getSocket_fd(), NULL);
 	#endif
