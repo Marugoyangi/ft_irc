@@ -409,7 +409,11 @@ void Server::setupKqueue()
             }
             start_time = time(NULL);
         }
-        int n = kevent(kq, NULL, 0, events, MAX_EVENTS, NULL); // 대기
+        struct timespec timeout;
+        timeout.tv_sec = 0;           // 0초
+        timeout.tv_nsec = 100000000;  // 100ms
+
+        int n = kevent(kq, NULL, 0, events, MAX_EVENTS, &timeout);
         if (n == -1)
         {
             die("kevent wait");
