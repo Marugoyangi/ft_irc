@@ -112,7 +112,7 @@ void CommandHandler::privmsg(Command const &cmd, Client const &client, Server &s
                         std::cout << "not DCC Message: " << trimmed_message << std::endl;
                     std::string full_msg = client.getSource() + " PRIVMSG " + target + " :" + message + "\r\n";
                     std::cout << "Full message: " << full_msg << std::endl;
-                    _reply += full_msg;
+		    it->second.getHandler().addReply(full_msg);
                     break;
                 }
             }
